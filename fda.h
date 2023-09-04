@@ -29,4 +29,5 @@ void fda_add_rule(FDA *aut, state_t state, char input, state_t res_state);
 
 static state_t fda_get_out_state(const FDA *aut, char input);
 
+void fda_reset(FDA *aut);
 FDA_Result fda_step(FDA *aut, char input);

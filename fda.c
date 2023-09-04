@@ -34,6 +34,11 @@ static state_t fda_get_out_state(const FDA *aut, char input)
     return aut->output[aut->cur_state][input];
 }
 
+void fda_reset(FDA *aut)
+{
+    aut->cur_state = aut->init_state;
+}
+
 FDA_Result fda_step(FDA *aut, char input)
 {
     state_t new_state = fda_get_out_state(aut, input);

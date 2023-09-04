@@ -26,6 +26,7 @@ int main()
     fda_add_rule(&test, 1, 'y', 2);
     fda_add_rule(&test, 2, 'z', 3);
 
+    fda_reset(&test);
     const char *our_input = "xyz";
     FDA_Result res;
     do
