@@ -43,7 +43,7 @@ bool init_fda_from(FILE *stream, FDA *aut)
             fprintf(stderr, "Expected alphabet size < 26, found %d symbols!\n", alph_cnt);
             return false;
         }
-        fda_alphabet = malloc(alph_cnt);
+        fda_alphabet = malloc(alph_cnt + 1);
         for (int i = 0; i < alph_cnt; ++i)
             fda_alphabet[i] = 'a' + i;
     }
@@ -60,10 +60,11 @@ bool init_fda_from(FILE *stream, FDA *aut)
             ++alph_cnt;
             ++ptr;
         }
-        fda_alphabet = malloc(alph_cnt);
+        fda_alphabet = malloc(alph_cnt + 1);
         memcpy(fda_alphabet, buf, alph_cnt);
     }
-    printf("Alphabet: %s\n", fda_alphabet);
+    fda_alphabet[alph_cnt] = '\0';
+    printf("Alphabet: \"%s\", size %d\n", fda_alphabet, alph_cnt);
 
     // Читаем возможные состояния автомата
     fgets(buf, LINE_SIZE, stream);
@@ -95,7 +96,7 @@ bool init_fda_from(FILE *stream, FDA *aut)
         for (int i = 0; i < fda_states.count; ++i)
             fda_states.states[i] = pre_states[i];
     }
-    printf("states found: %d\n", fda_states.count);
+    printf("total states found: %d\n", fda_states.count);
 
     // Читаем финальные состояния
     fgets(buf, LINE_SIZE, stream);
@@ -119,7 +120,7 @@ bool init_fda_from(FILE *stream, FDA *aut)
         for (int i = 0; i < fda_fin_states.count; ++i)
             fda_fin_states.states[i] = pre_states[i];
     }
-    printf("final states found:  %d\n", fda_fin_states.count);
+    printf("total final states found:  %d\n", fda_fin_states.count);
 
     // Читаем начальное состояние
     fgets(buf, LINE_SIZE, stream);
