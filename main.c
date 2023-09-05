@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdbool.h>
 
 #include "fda.h"
 
@@ -9,7 +10,7 @@
 
 #define FDA_FILE "input.txt"
 
-void init_fda_from(FILE *stream, FDA *aut)
+bool init_fda_from(FILE *stream, FDA *aut)
 {
     // Заготовочка переменных
     char *fda_alphabet;
@@ -28,8 +29,8 @@ void init_fda_from(FILE *stream, FDA *aut)
     buf_len = strlen(buf);
     if (buf[buf_len - 1] != '\n')
     {
-        fprintf(stderr, "Line was too long!");
-        return;
+        fprintf(stderr, "Line was too long!\n");
+        return false;
     }
     buf[buf_len - 1] = '\0';
 
@@ -39,8 +40,8 @@ void init_fda_from(FILE *stream, FDA *aut)
         alph_cnt = atoi(buf + 1);
         if (alph_cnt > 26)
         {
-            fprintf(stderr, "Expected alphabet size < 26, found %d symbols!", alph_cnt);
-            return;
+            fprintf(stderr, "Expected alphabet size < 26, found %d symbols!\n", alph_cnt);
+            return false;
         }
         fda_alphabet = malloc(alph_cnt);
         for (int i = 0; i < alph_cnt; ++i)
@@ -53,8 +54,8 @@ void init_fda_from(FILE *stream, FDA *aut)
         {
             if (!isalpha(*ptr))
             {
-                fprintf(stderr, "Expected alphabet to be english alphabet, found symbol '%c'!", *ptr);
-                return;
+                fprintf(stderr, "Expected alphabet to be english alphabet, found symbol '%c'!\n", *ptr);
+                return false;
             }
             ++alph_cnt;
             ++ptr;
@@ -89,12 +90,12 @@ void init_fda_from(FILE *stream, FDA *aut)
             seek = end;
             ++i;
         }
-        printf("found %d states\n", i);
         fda_states.count = i;
         fda_states.states = malloc(fda_states.count * sizeof(state_t));
         for (int i = 0; i < fda_states.count; ++i)
             fda_states.states[i] = pre_states[i];
     }
+    printf("found %d states\n", fda_states.count);
 
     // Читаем финальные состояния
     fgets(buf, LINE_SIZE, stream);
@@ -113,12 +114,12 @@ void init_fda_from(FILE *stream, FDA *aut)
             seek = end;
             ++i;
         }
-        printf("found %d final states\n", i);
         fda_fin_states.count = i;
         fda_fin_states.states = malloc(fda_fin_states.count * sizeof(state_t));
         for (int i = 0; i < fda_states.count; ++i)
             fda_fin_states.states[i] = pre_states[i];
     }
+    printf("found %d final states\n", fda_fin_states.count);
 
     // Читаем начальное состояние
     fgets(buf, LINE_SIZE, stream);
@@ -146,6 +147,8 @@ void init_fda_from(FILE *stream, FDA *aut)
     fda_set_states(aut, fda_states);
     fda_set_final_states(aut, fda_fin_states);
     fda_set_initial_state(aut, init_state);
+
+    return true;
 }
 
 int main()
@@ -157,14 +160,23 @@ int main()
         fprintf(stderr, "File %s doesn't exist!\n", FDA_FILE);
         return 1;
     }
-    init_fda_from(file, &test);
+    if (!init_fda_from(file, &test))
+    {
+        fprintf(stderr, "Failed to read FDA.\n");
+        return 1;
+    }
     fclose(file);
 
     fda_reset(&test);
 
     printf("> ");
     char inp[LINE_SIZE];
-    fgets(inp, LINE_SIZE, stdin);
+    char *input = fgets(inp, LINE_SIZE, stdin);
+    if (input == NULL)
+    {
+        fprintf(stderr, "Got no input.\n");
+        return 1;
+    }
 
     char *seek = inp;
     FDA_Result res;
