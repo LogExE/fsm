@@ -154,7 +154,7 @@ int main()
     FILE *file = fopen(FDA_FILE, "r");
     if (file == NULL)
     {
-        fprintf(stderr, "File %s doesn't exist!", FDA_FILE);
+        fprintf(stderr, "File %s doesn't exist!\n", FDA_FILE);
         return 1;
     }
     init_fda_from(file, &test);
