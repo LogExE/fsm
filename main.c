@@ -40,7 +40,7 @@ bool init_fda_from(FILE *stream, FDA *aut)
         alph_cnt = atoi(buf + 1);
         if (alph_cnt > FDA_ALPHABET_SIZE)
         {
-            fprintf(stderr, "Expected alphabet size < %d, found %d symbols!\n", FDA_ALPHABET_SIZE, alph_cnt);
+            fprintf(stderr, "Expected alphabet size <= %d, found %d symbols!\n", FDA_ALPHABET_SIZE, alph_cnt);
             return false;
         }
         fda_alphabet = malloc(alph_cnt + 1);
