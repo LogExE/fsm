@@ -4,5 +4,5 @@
 
 void fda_states_free(FDA_States *states)
 {
-    free(states->states);
+    free(states->values);
 }

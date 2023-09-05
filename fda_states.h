@@ -6,7 +6,7 @@ typedef int state_t;
 
 typedef struct
 {
-    state_t *states;
+    state_t *values;
     int count;
 } FDA_States;
 

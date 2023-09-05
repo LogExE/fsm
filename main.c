@@ -73,9 +73,9 @@ bool init_fda_from(FILE *stream, FDA *aut)
     if (buf[0] == '!')
     {
         fda_states.count = atoi(buf + 1);
-        fda_states.states = malloc(fda_states.count * sizeof(state_t));
+        fda_states.values = malloc(fda_states.count * sizeof(state_t));
         for (int i = 1; i <= fda_states.count; ++i)
-            fda_states.states[i] = i;
+            fda_states.values[i] = i;
     }
     else
     {
@@ -92,9 +92,9 @@ bool init_fda_from(FILE *stream, FDA *aut)
             ++i;
         }
         fda_states.count = i;
-        fda_states.states = malloc(fda_states.count * sizeof(state_t));
+        fda_states.values = malloc(fda_states.count * sizeof(state_t));
         for (int i = 0; i < fda_states.count; ++i)
-            fda_states.states[i] = pre_states[i];
+            fda_states.values[i] = pre_states[i];
     }
     printf("total states found: %d\n", fda_states.count);
 
@@ -116,9 +116,9 @@ bool init_fda_from(FILE *stream, FDA *aut)
             ++i;
         }
         fda_fin_states.count = i;
-        fda_fin_states.states = malloc(fda_fin_states.count * sizeof(state_t));
+        fda_fin_states.values = malloc(fda_fin_states.count * sizeof(state_t));
         for (int i = 0; i < fda_fin_states.count; ++i)
-            fda_fin_states.states[i] = pre_states[i];
+            fda_fin_states.values[i] = pre_states[i];
     }
     printf("total final states found:  %d\n", fda_fin_states.count);
 
@@ -168,6 +168,7 @@ int main()
     }
     fclose(file);
 
+    printf("Read automata:\n");
     fda_output_rules(&test);
     fda_reset(&test);
 
@@ -188,7 +189,7 @@ int main()
         printf("step result: %d\n", res);
     } while (*input && res == NEXT);
     if (res == WORD)
-        printf("Automata is in final state, so word has been recognized!\n");
+        printf("Automata is in final state, word has been recognized!\n");
     else
         printf("Word has not been recognized!\n");
     fda_free(&test);
