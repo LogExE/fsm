@@ -143,6 +143,8 @@ bool init_fda_from(FILE *stream, FDA *aut)
 
     printf("good.\n");
 
+    fda_init(aut);
+    //TODO: переходы регистрировать здесь
     // Применяем изменения
     fda_set_alphabet(aut, fda_alphabet);
     fda_set_states(aut, fda_states);
