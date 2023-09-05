@@ -74,8 +74,8 @@ bool init_fda_from(FILE *stream, FDA *aut)
     {
         fda_states.count = atoi(buf + 1);
         fda_states.values = malloc(fda_states.count * sizeof(state_t));
-        for (int i = 1; i <= fda_states.count; ++i)
-            fda_states.values[i] = i;
+        for (int i = 0; i < fda_states.count; ++i)
+            fda_states.values[i] = i + 1;
     }
     else
     {
