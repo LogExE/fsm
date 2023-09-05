@@ -173,4 +173,5 @@ int main()
         res = fda_step(&test, *seek++);
         printf("res == %d\n", res);
     } while (*inp && res == NEXT);
+    fda_free(&test);
 }
