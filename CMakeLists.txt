@@ -5,4 +5,5 @@ project("fda")
 add_executable(fda
     main.c
     fda.c
+    fda_states.c
 )

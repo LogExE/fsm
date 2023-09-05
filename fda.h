@@ -10,7 +10,7 @@ typedef enum {
 
 typedef struct 
 {
-    const char *alphabet;
+    char *alphabet;
     FDA_States states;
     FDA_States fin_states;
 
@@ -20,7 +20,7 @@ typedef struct
     int cur_state;
 } FDA;
 
-void fda_set_alphabet(FDA *aut, const char *alphabet);
+void fda_set_alphabet(FDA *aut, char *alphabet);
 void fda_set_states(FDA *aut, FDA_States allowed_states);
 void fda_set_final_states(FDA *aut, FDA_States final_states);
 void fda_set_initial_state(FDA *aut, state_t initial_state);
@@ -31,3 +31,5 @@ static state_t fda_get_out_state(const FDA *aut, char input);
 
 void fda_reset(FDA *aut);
 FDA_Result fda_step(FDA *aut, char input);
+
+void fda_free(FDA *aut);
