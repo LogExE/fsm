@@ -48,10 +48,7 @@ FDA_Result fda_step(FDA *aut, char input)
     aut->cur_state = new_state;
     for (int i = 0; i < aut->fin_states.count; ++i)
         if (aut->fin_states.states[i] == new_state)
-        {
-            printf("Automata is in final state!\n");
             return WORD;
-        }
     return NEXT;
 }
 

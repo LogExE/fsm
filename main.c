@@ -177,6 +177,7 @@ int main()
         fprintf(stderr, "Got no input.\n");
         return 1;
     }
+    inp[strcspn(inp, "\n")] = '\0';
 
     FDA_Result res;
     do
@@ -184,5 +185,9 @@ int main()
         res = fda_step(&test, *input++);
         printf("step result: %d\n", res);
     } while (*input && res == NEXT);
+    if (res == WORD)
+        printf("Automata is in final state, so word has been recognized!\n");
+    else
+        printf("Word has not been recognized!\n");
     fda_free(&test);
 }
