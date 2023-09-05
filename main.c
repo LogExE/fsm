@@ -178,12 +178,11 @@ int main()
         return 1;
     }
 
-    char *seek = inp;
     FDA_Result res;
     do
     {
-        res = fda_step(&test, *seek++);
+        res = fda_step(&test, *input++);
         printf("res == %d\n", res);
-    } while (*inp && res == NEXT);
+    } while (*input && res == NEXT);
     fda_free(&test);
 }

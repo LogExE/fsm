@@ -1,6 +1,7 @@
 #include "fda.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 
 void fda_set_alphabet(FDA *aut, char *alphabet)
 {
