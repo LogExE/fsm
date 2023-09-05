@@ -123,6 +123,7 @@ void init_fda_from(FILE *stream, FDA *aut)
     // Читаем начальное состояние
     fgets(buf, LINE_SIZE, stream);
     init_state = atoi(buf);
+    printf("%d will be initial state\n", init_state);
 
     // До конца файла ищем правила переходов
     while (fgets(buf, LINE_SIZE, stream))
