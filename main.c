@@ -95,7 +95,7 @@ bool init_fda_from(FILE *stream, FDA *aut)
         for (int i = 0; i < fda_states.count; ++i)
             fda_states.states[i] = pre_states[i];
     }
-    printf("found %d states\n", fda_states.count);
+    printf("states found: %d\n", fda_states.count);
 
     // Читаем финальные состояния
     fgets(buf, LINE_SIZE, stream);
@@ -119,12 +119,12 @@ bool init_fda_from(FILE *stream, FDA *aut)
         for (int i = 0; i < fda_states.count; ++i)
             fda_fin_states.states[i] = pre_states[i];
     }
-    printf("found %d final states\n", fda_fin_states.count);
+    printf("final states found:  %d\n", fda_fin_states.count);
 
     // Читаем начальное состояние
     fgets(buf, LINE_SIZE, stream);
     init_state = atoi(buf);
-    printf("%d will be initial state\n", init_state);
+    printf("initial state: %d\n", init_state);
 
     // До конца файла ищем правила переходов
     while (fgets(buf, LINE_SIZE, stream))
@@ -136,7 +136,7 @@ bool init_fda_from(FILE *stream, FDA *aut)
         char x = *seek;
         ++seek; // пропуск пробела
         state_t s2 = strtol(seek, &end, 10);
-        printf("found rule (%d, %c) -> %d\n", s1, x, s2);
+        printf("found rule: (%d, %c) -> %d\n", s1, x, s2);
         fda_add_rule(aut, s1, x, s2);
     }
 
