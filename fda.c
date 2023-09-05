@@ -43,13 +43,30 @@ void fda_reset(FDA *aut)
 FDA_Result fda_step(FDA *aut, char input)
 {
     state_t new_state = fda_get_out_state(aut, input);
-    printf("Automata got input %c, changing state from %d into %d\n", 
-        input, aut->cur_state, new_state);
-    aut->cur_state = new_state;
+    if (new_state != FDA_OUTPUT_STATE_NONE)
+    {
+        printf("Automata got input %c, changing state from %d into %d\n",
+               input, aut->cur_state, new_state);
+        aut->cur_state = new_state;
+    }
+    else
+        printf("Automata got input %c, rule wasn't set or state doesn't need to be changed\n", input);
     for (int i = 0; i < aut->fin_states.count; ++i)
         if (aut->fin_states.states[i] == new_state)
             return WORD;
     return NEXT;
+}
+
+void fda_output_rules(const FDA *aut)
+{
+    printf(" | ");
+}
+
+void fda_init(FDA *aut)
+{
+    for (int i = 0; i < FDA_MAX_STATE_NUM; ++i)
+        for (int j = 0; j < FDA_ALPHABET_SIZE; ++j)
+            aut->output[i][j] = FDA_OUTPUT_STATE_NONE;
 }
 
 void fda_free(FDA *aut)
