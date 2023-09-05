@@ -116,7 +116,7 @@ bool init_fda_from(FILE *stream, FDA *aut)
         }
         fda_fin_states.count = i;
         fda_fin_states.states = malloc(fda_fin_states.count * sizeof(state_t));
-        for (int i = 0; i < fda_states.count; ++i)
+        for (int i = 0; i < fda_fin_states.count; ++i)
             fda_fin_states.states[i] = pre_states[i];
     }
     printf("final states found:  %d\n", fda_fin_states.count);
@@ -182,7 +182,7 @@ int main()
     do
     {
         res = fda_step(&test, *input++);
-        printf("res == %d\n", res);
+        printf("step result: %d\n", res);
     } while (*input && res == NEXT);
     fda_free(&test);
 }
