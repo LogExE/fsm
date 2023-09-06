@@ -2,11 +2,11 @@
 
 #include <stdlib.h>
 
-FDA_States fda_states_alloc(int count)
+FDA_States *fda_states_create(state_t *values, int count)
 {
-    FDA_States res;
-    res.count = count;
-    res.values = malloc(count * sizeof(state_t));
+    FDA_States *res = malloc(sizeof(FDA_States));
+    res->count = count;
+    res->values = values;
     return res;
 }
 
