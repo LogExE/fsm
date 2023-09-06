@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 void fda_set_alphabet(FDA *aut, char *alphabet)
 {
@@ -66,22 +67,37 @@ void fda_output_rules(const FDA *aut)
     printf("\n");
     for (int i = 0; i < aut->states.count; ++i)
     {
-        printf("%d|", aut->states.values[i]);
+        state_t state = aut->states.values[i];
+        printf("%d|", state);
         seek = aut->alphabet;
         while (*seek)
         {
-            state_t to_print = aut->output[aut->states.values[i]][*seek++];
+            state_t to_print = aut->output[state][*seek++];
             if (to_print == FDA_OUTPUT_STATE_NONE)
                 printf("x");
             else
                 printf("%d", to_print);
             printf("|");
         }
+        bool initial = state == aut->init_state;
+        bool final = false;
         for (int j = 0; j < aut->fin_states.count; ++j)
-            if (aut->fin_states.values[j] == aut->states.values[i])
+            if (aut->fin_states.values[j] == state)
             {
-                printf(" <- final state");
+                final = true;
+                break;
             }
+        if (initial || final)
+        {
+            printf(" <- ");
+            if (initial && final)
+                printf("inital and final");
+            else if (initial)
+                printf("initial");
+            else
+                printf("final");
+            printf(" state");
+        }
         printf("\n");
     }
 }
