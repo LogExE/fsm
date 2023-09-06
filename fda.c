@@ -28,7 +28,7 @@ void fda_reset(FDA *aut)
 
 FDA_Result fda_step(FDA *aut, char input)
 {
-    state_t new_state = fda_get_out_state(aut, input);
+    state_t new_state = fda_get_out_state(aut, input - 'a');
     if (new_state != FDA_OUTPUT_STATE_NONE)
     {
         printf("Automaton got input %c, changing state from %d into %d\n",

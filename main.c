@@ -48,4 +48,5 @@ int main()
     else
         printf("Word has not been recognized!\n");
     fda_free(test);
+    fda_spec_free(spec);
 }
