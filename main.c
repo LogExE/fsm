@@ -162,13 +162,13 @@ bool init_fda_from(FILE *stream, FDA *aut)
 
 int main()
 {
-    FDA test;
     FILE *file = fopen(FDA_FILE, "r");
     if (file == NULL)
     {
         fprintf(stderr, "File %s doesn't exist!\n", FDA_FILE);
         return 1;
     }
+    FDA test;
     if (!init_fda_from(file, &test))
     {
         fprintf(stderr, "Failed to read FDA.\n");
@@ -176,7 +176,7 @@ int main()
     }
     fclose(file);
 
-    printf("Read automata:\n");
+    printf("Read automaton:\n");
     fda_output_rules(&test);
     fda_reset(&test);
 
@@ -197,7 +197,7 @@ int main()
         printf("step result: %d\n", res);
     } while (*input && res == NEXT);
     if (res == WORD)
-        printf("Automata is in final state, word has been recognized!\n");
+        printf("Automaton is in final state, word has been recognized!\n");
     else
         printf("Word has not been recognized!\n");
     fda_free(&test);

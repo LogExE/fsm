@@ -45,12 +45,12 @@ FDA_Result fda_step(FDA *aut, char input)
     state_t new_state = fda_get_out_state(aut, input);
     if (new_state != FDA_OUTPUT_STATE_NONE)
     {
-        printf("Automata got input %c, changing state from %d into %d\n",
+        printf("Automaton got input %c, changing state from %d into %d\n",
                input, aut->cur_state, new_state);
         aut->cur_state = new_state;
     }
     else
-        printf("Automata got input %c, rule wasn't set or state doesn't need to be changed\n", input);
+        printf("Automaton got input %c, rule wasn't set or state doesn't need to be changed\n", input);
     for (int i = 0; i < aut->fin_states.count; ++i)
         if (aut->fin_states.values[i] == new_state)
             return WORD;
