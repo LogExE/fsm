@@ -7,6 +7,7 @@
 #include "fda.h"
 
 #define LINE_SIZE 512
+#define FILE_MAX_RULES_COUNT 512
 
 #define FDA_FILE "input.txt"
 
@@ -72,8 +73,7 @@ bool init_fda_from(FILE *stream, FDA *aut)
 
     if (buf[0] == '!')
     {
-        fda_states.count = atoi(buf + 1);
-        fda_states.values = malloc(fda_states.count * sizeof(state_t));
+        fda_states = fda_states_alloc(atoi(buf + 1));
         for (int i = 0; i < fda_states.count; ++i)
             fda_states.values[i] = i + 1;
     }
@@ -91,10 +91,9 @@ bool init_fda_from(FILE *stream, FDA *aut)
             seek = end;
             ++i;
         }
-        fda_states.count = i;
-        fda_states.values = malloc(fda_states.count * sizeof(state_t));
-        for (int i = 0; i < fda_states.count; ++i)
-            fda_states.values[i] = pre_states[i];
+        fda_states = fda_states_alloc(i);
+        for (int j = 0; j < i; ++j)
+            fda_states.values[j] = pre_states[j];
     }
     printf("total states found: %d\n", fda_states.count);
 
@@ -115,10 +114,9 @@ bool init_fda_from(FILE *stream, FDA *aut)
             seek = end;
             ++i;
         }
-        fda_fin_states.count = i;
-        fda_fin_states.values = malloc(fda_fin_states.count * sizeof(state_t));
-        for (int i = 0; i < fda_fin_states.count; ++i)
-            fda_fin_states.values[i] = pre_states[i];
+        fda_fin_states = fda_states_alloc(i);
+        for (int j = 0; j < i; ++j)
+            fda_fin_states.values[j] = pre_states[j];
     }
     printf("total final states found:  %d\n", fda_fin_states.count);
 
@@ -127,29 +125,37 @@ bool init_fda_from(FILE *stream, FDA *aut)
     init_state = atoi(buf);
     printf("initial state: %d\n", init_state);
 
+    state_t rules[2 * FILE_MAX_RULES_COUNT];
+    char rules_sym[FILE_MAX_RULES_COUNT];
+    int rules_cnt = 0;
     // До конца файла ищем правила переходов
     while (fgets(buf, LINE_SIZE, stream))
     {
         char *seek = buf;
         char *end = NULL;
-        state_t s1 = strtol(seek, &end, 10);
+        rules[rules_cnt] = strtol(seek, &end, 10);
         seek = end + 1; // пропуск пробела
-        char x = *seek;
+        rules_sym[rules_cnt] = *seek;
         ++seek; // пропуск пробела
-        state_t s2 = strtol(seek, &end, 10);
-        printf("found rule: (%d, %c) -> %d\n", s1, x, s2);
-        fda_add_rule(aut, s1, x, s2);
+        rules[FILE_MAX_RULES_COUNT + rules_cnt] = strtol(seek, &end, 10);
+        printf("found rule: (%d, %c) -> %d\n",
+               rules[rules_cnt],
+               rules_sym[rules_cnt],
+               rules[FILE_MAX_RULES_COUNT + rules_cnt]);
+        ++rules_cnt;
     }
 
     printf("good.\n");
 
     fda_init(aut);
-    //TODO: переходы регистрировать здесь
-    // Применяем изменения
+    //  Применяем изменения
     fda_set_alphabet(aut, fda_alphabet);
     fda_set_states(aut, fda_states);
     fda_set_final_states(aut, fda_fin_states);
     fda_set_initial_state(aut, init_state);
+
+    for (int i = 0; i < rules_cnt; ++i)
+        fda_add_rule(aut, rules[i], rules_sym[i], rules[FILE_MAX_RULES_COUNT + i]);
 
     return true;
 }

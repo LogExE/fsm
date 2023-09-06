@@ -10,4 +10,5 @@ typedef struct
     int count;
 } FDA_States;
 
+FDA_States fda_states_alloc(int count);
 void fda_states_free(FDA_States *states);
