@@ -13,9 +13,7 @@ typedef struct
 FDA *fda_create(FDA_Spec *spec);
 void fda_free(FDA *aut);
 
-static state_t fda_get_out_state(const FDA *aut, char input);
-
 void fda_reset(FDA *aut);
 void fda_step(FDA *aut, char input);
 void fda_output_rules(const FDA *aut);
-bool fda_check_final(FDA *aut);
+bool fda_check_final(const FDA *aut);

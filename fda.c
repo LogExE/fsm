@@ -16,9 +16,17 @@ void fda_free(FDA *aut)
     free(aut);
 }
 
-static state_t fda_get_out_state(const FDA *aut, char input)
+static state_t get_out_state(const FDA *aut, char input)
 {
     return aut->spec->output[aut->cur_state][input];
+}
+
+static bool check_state(const FDA *aut, state_t state)
+{
+    for (int i = 0; i < aut->spec->fin_states->count; ++i)
+        if (aut->spec->fin_states->values[i] == state)
+            return true;
+    return false;
 }
 
 void fda_reset(FDA *aut)
@@ -28,7 +36,7 @@ void fda_reset(FDA *aut)
 
 void fda_step(FDA *aut, char input)
 {
-    state_t new_state = fda_get_out_state(aut, input - 'a');
+    state_t new_state = get_out_state(aut, input - 'a');
     if (new_state != FDA_OUTPUT_STATE_NONE)
     {
         printf("Automaton got input %c, changing state from %d into %d\n",
@@ -61,13 +69,7 @@ void fda_output_rules(const FDA *aut)
             printf("|");
         }
         bool initial = state == aut->spec->init_state;
-        bool final = false;
-        for (int j = 0; j < aut->spec->fin_states->count; ++j)
-            if (aut->spec->fin_states->values[j] == state)
-            {
-                final = true;
-                break;
-            }
+        bool final = check_state(aut, state);
         if (initial || final)
         {
             printf(" <- ");
@@ -83,10 +85,7 @@ void fda_output_rules(const FDA *aut)
     }
 }
 
-bool fda_check_final(FDA *aut)
+bool fda_check_final(const FDA *aut)
 {
-    for (int i = 0; i < aut->spec->fin_states->count; ++i)
-        if (aut->spec->fin_states->values[i] == aut->cur_state)
-            return true;
-    return false;
+    return check_state(aut, aut->cur_state);
 }
