@@ -1,13 +1,8 @@
 #pragma once
 
-#include "fda_spec.h"
+#include <stdbool.h>
 
-typedef enum
-{
-    WORD,
-    NOT_WORD,
-    NEXT
-} FDA_Result;
+#include "fda_spec.h"
 
 typedef struct
 {
@@ -21,5 +16,6 @@ void fda_free(FDA *aut);
 static state_t fda_get_out_state(const FDA *aut, char input);
 
 void fda_reset(FDA *aut);
-FDA_Result fda_step(FDA *aut, char input);
+void fda_step(FDA *aut, char input);
 void fda_output_rules(const FDA *aut);
+bool fda_check_final(FDA *aut);

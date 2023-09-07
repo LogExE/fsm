@@ -37,13 +37,9 @@ int main()
     }
     inp[strcspn(inp, "\n")] = '\0';
 
-    FDA_Result res;
-    do
-    {
-        res = fda_step(test, *input++);
-        printf("step result: %d\n", res);
-    } while (*input && res == NEXT);
-    if (res == WORD)
+    while (*input)
+        fda_step(test, *input++);
+    if (fda_check_final(test))
         printf("Automaton is in final state, word has been recognized!\n");
     else
         printf("Word has not been recognized!\n");

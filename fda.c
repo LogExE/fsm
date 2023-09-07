@@ -26,7 +26,7 @@ void fda_reset(FDA *aut)
     aut->cur_state = aut->spec->init_state;
 }
 
-FDA_Result fda_step(FDA *aut, char input)
+void fda_step(FDA *aut, char input)
 {
     state_t new_state = fda_get_out_state(aut, input - 'a');
     if (new_state != FDA_OUTPUT_STATE_NONE)
@@ -37,10 +37,6 @@ FDA_Result fda_step(FDA *aut, char input)
     }
     else
         printf("Automaton got input %c, rule wasn't set or state doesn't need to be changed\n", input);
-    for (int i = 0; i < aut->spec->fin_states->count; ++i)
-        if (aut->spec->fin_states->values[i] == new_state)
-            return WORD;
-    return NEXT;
 }
 
 void fda_output_rules(const FDA *aut)
@@ -85,4 +81,12 @@ void fda_output_rules(const FDA *aut)
         }
         printf("\n");
     }
+}
+
+bool fda_check_final(FDA *aut)
+{
+    for (int i = 0; i < aut->spec->fin_states->count; ++i)
+        if (aut->spec->fin_states->values[i] == aut->cur_state)
+            return true;
+    return false;
 }
