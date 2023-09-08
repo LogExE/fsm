@@ -33,7 +33,7 @@ bool fda_spec_read_from(FILE *stream, FDA_Spec *spec)
     if (buf[buf_len - 1] != '\n')
     {
         fprintf(stderr, "Line was too long!\n");
-        return NULL;
+        return false;
     }
     buf[buf_len - 1] = '\0';
 
@@ -43,7 +43,7 @@ bool fda_spec_read_from(FILE *stream, FDA_Spec *spec)
         if (alph_cnt > FDA_ALPHABET_SIZE)
         {
             fprintf(stderr, "Expected alphabet size <= %d, found %d symbols!\n", FDA_ALPHABET_SIZE, alph_cnt);
-            return NULL;
+            return false;
         }
         fda_alphabet = malloc(alph_cnt + 1);
         for (int i = 0; i < alph_cnt; ++i)
@@ -57,7 +57,7 @@ bool fda_spec_read_from(FILE *stream, FDA_Spec *spec)
             if (!isalpha(*ptr))
             {
                 fprintf(stderr, "Expected alphabet to be english alphabet, found symbol '%c'!\n", *ptr);
-                return NULL;
+                return false;
             }
             ++ptr;
         }
@@ -152,11 +152,11 @@ bool fda_spec_read_from(FILE *stream, FDA_Spec *spec)
     spec->states = fda_states_create(fda_states, state_cnt);
     spec->fin_states = fda_states_create(fda_fin_states, fin_state_cnt);
     spec->init_state = fda_init_state;
-    
+
     for (int i = 0; i < rules_cnt; ++i)
         spec->output[rules[i]][rules_sym[i]] = rules[FILE_MAX_RULES_COUNT + i];
 
-    return spec;
+    return true;
 }
 
 void fda_spec_output(FDA_Spec spec)
