@@ -153,6 +153,9 @@ bool fda_spec_read_from(FILE *stream, FDA_Spec *spec)
     spec->fin_states = fda_states_create(fda_fin_states, fin_state_cnt);
     spec->init_state = fda_init_state;
 
+    for (state_t state; state < FDA_MAX_STATE_NUM; ++state)
+        for (int i = 0; i < FDA_ALPHABET_SIZE; ++i)
+            spec->output[state][i] = FDA_OUTPUT_STATE_NONE;
     for (int i = 0; i < rules_cnt; ++i)
         spec->output[rules[i]][rules_sym[i]] = rules[FILE_MAX_RULES_COUNT + i];
 
