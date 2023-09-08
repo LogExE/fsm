@@ -3,6 +3,7 @@
 #include "fda_states.h"
 
 #include <stdio.h>
+#include <stdbool.h>
 
 #define FDA_ALPHABET_SIZE 26
 #define FDA_OUTPUT_STATE_NONE 0
@@ -14,14 +15,14 @@ typedef struct
 {
     char *alphabet;
 
-    FDA_States *states;
-    FDA_States *fin_states;
+    fda_states_t states;
+    fda_states_t fin_states;
     int init_state;
 
     state_t output[FDA_MAX_STATE_NUM][FDA_ALPHABET_SIZE];
 } FDA_Spec;
 
-FDA_Spec *fda_spec_create(char *alphabet, FDA_States *allowed_states, FDA_States *final_states, state_t initial_state);
-void fda_spec_add_rule(FDA_Spec *spec, state_t state, char input, state_t res_state);
-void fda_spec_free(FDA_Spec *spec);
-FDA_Spec *fda_spec_read_from(FILE *stream);
+bool fda_spec_check_is_final(FDA_Spec spec, state_t state);
+
+bool fda_spec_read_from(FILE *stream, FDA_Spec *spec);
+void fda_spec_output(FDA_Spec spec);

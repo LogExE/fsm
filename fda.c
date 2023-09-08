@@ -4,88 +4,61 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-FDA *fda_create(FDA_Spec *spec)
+struct FDA
 {
-    FDA *res = malloc(sizeof(FDA));
+    FDA_Spec *spec;
+
+    FDA_Output output;
+    int cur_state;
+};
+
+fda_t fda_create(FDA_Spec *spec)
+{
+    fda_t res = malloc(sizeof(struct FDA));
     res->spec = spec;
     return res;
 }
 
-void fda_free(FDA *aut)
+void fda_free(fda_t aut)
 {
     free(aut);
 }
 
-static state_t get_out_state(const FDA *aut, char input)
+static state_t get_out_state(const fda_t aut, char input)
 {
     return aut->spec->output[aut->cur_state][input];
 }
 
-static bool check_state(const FDA *aut, state_t state)
-{
-    for (int i = 0; i < aut->spec->fin_states->count; ++i)
-        if (aut->spec->fin_states->values[i] == state)
-            return true;
-    return false;
-}
-
-void fda_reset(FDA *aut)
+void fda_reset(fda_t aut)
 {
     aut->cur_state = aut->spec->init_state;
+    aut->output = FDA_NEXT;
 }
 
-void fda_step(FDA *aut, char input)
+void fda_step(fda_t aut, char input)
 {
     state_t new_state = get_out_state(aut, input - 'a');
     if (new_state != FDA_OUTPUT_STATE_NONE)
     {
-        printf("Automaton got input %c, changing state from %d into %d\n",
-               input, aut->cur_state, new_state);
         aut->cur_state = new_state;
+        if (fda_spec_check_is_final(*aut->spec, aut->cur_state))
+            aut->output = FDA_RECOGNIZED;
+        else
+            aut->output = FDA_NEXT;
     }
     else
-        printf("Automaton got input %c, rule wasn't set or state doesn't need to be changed\n", input);
-}
-
-void fda_output_rules(const FDA *aut)
-{
-    printf(" |");
-    char *seek = aut->spec->alphabet;
-    while (*seek)
-        printf("%c|", *seek++);
-    printf("\n");
-    for (int i = 0; i < aut->spec->states->count; ++i)
     {
-        state_t state = aut->spec->states->values[i];
-        printf("%d|", state);
-        seek = aut->spec->alphabet;
-        while (*seek)
-        {
-            state_t to_print = aut->spec->output[state][*seek++ - 'a'];
-            if (to_print == FDA_OUTPUT_STATE_NONE)
-                printf("x");
-            else
-                printf("%d", to_print);
-            printf("|");
-        }
-        bool initial = state == aut->spec->init_state;
-        bool final = check_state(aut, state);
-        if (initial || final)
-        {
-            printf(" <- ");
-            if (initial && final)
-                printf("inital and final");
-            else if (initial)
-                printf("initial");
-            else
-                printf("final");
-            printf(" state");
-        }
-        printf("\n");
+        printf("Automaton got input %c, rule wasn't set!\n", input);
+        aut->output = FDA_FAILED;
     }
 }
 
-bool fda_check_final(const FDA *aut)
+state_t fda_get_state(const fda_t aut)
 {
-    return check_state(aut, aut->cur_state);
+    return aut->cur_state;
+}
+
+FDA_Output fda_get_output(const fda_t aut)
+{
+    return aut->output;
 }

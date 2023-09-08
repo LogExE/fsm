@@ -14,17 +14,18 @@ int main()
         fprintf(stderr, "File %s doesn't exist!\n", FDA_FILE);
         return 1;
     }
-    FDA_Spec *spec = fda_spec_read_from(file);
-    if (spec == NULL)
+    FDA_Spec spec;
+    bool read = fda_spec_read_from(file, &spec);
+    if (!read)
     {
         fprintf(stderr, "Failed to read FDA.\n");
         return 1;
     }
     fclose(file);
 
-    FDA *test = fda_create(spec);
     printf("Read automaton:\n");
-    fda_output_rules(test);
+    fda_spec_output(spec);
+    fda_t test = fda_create(&spec);
     fda_reset(test);
 
     printf("> ");
@@ -38,11 +39,15 @@ int main()
     inp[strcspn(inp, "\n")] = '\0';
 
     while (*input)
-        fda_step(test, *input++);
-    if (fda_check_final(test))
-        printf("Automaton is in final state, word has been recognized!\n");
+    {
+        fda_step(test, *input);
+        state_t cur = fda_get_state(test);
+        printf("Passed %c to automaton, current state is %d\n", *input, cur);
+        ++input;
+    }
+    if (fda_get_output(test) == FDA_RECOGNIZED)
+        printf("Word has been recognized!\n");
     else
         printf("Word has not been recognized!\n");
     fda_free(test);
-    fda_spec_free(spec);
 }

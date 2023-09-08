@@ -4,42 +4,24 @@
 #include <string.h>
 #include <ctype.h>
 
-FDA_Spec *fda_spec_create(char *alphabet, FDA_States *allowed_states, FDA_States *final_states, state_t initial_state)
+bool fda_spec_check_is_final(FDA_Spec spec, state_t state)
 {
-    FDA_Spec *res = malloc(sizeof(FDA_Spec));
-    res->alphabet = alphabet;
-    res->states = allowed_states;
-    res->fin_states = final_states;
-    res->init_state = initial_state;
-    for (int i = 0; i < FDA_MAX_STATE_NUM; ++i)
-        for (int j = 0; j < FDA_ALPHABET_SIZE; ++j)
-            res->output[i][j] = FDA_OUTPUT_STATE_NONE;
-    return res;
+    for (int i = 0; i < fda_states_count(spec.fin_states); ++i)
+        if (fda_states_at(spec.fin_states, i) == state)
+            return true;
+    return false;
 }
 
-void fda_spec_add_rule(FDA_Spec *spec, state_t state, char input, state_t res_state)
-{
-    spec->output[state][input] = res_state;
-}
-
-void fda_spec_free(FDA_Spec *spec)
-{
-    free(spec->alphabet);
-    fda_states_free(spec->states);
-    fda_states_free(spec->fin_states);
-    free(spec);
-}
-
-FDA_Spec *fda_spec_read_from(FILE *stream)
+bool fda_spec_read_from(FILE *stream, FDA_Spec *spec)
 {
     // Заготовочка переменных
-    char *fda_alphabet = NULL;
+    char *fda_alphabet;
     int alph_cnt = 0;
     state_t *fda_states = NULL;
     int state_cnt = 0;
     state_t *fda_fin_states = NULL;
     int fin_state_cnt = 0;
-    int init_state = -1;
+    int fda_init_state;
 
     // Буфер для считывания строк потока
     char buf[LINE_SIZE];
@@ -140,12 +122,13 @@ FDA_Spec *fda_spec_read_from(FILE *stream)
 
     // Читаем начальное состояние
     fgets(buf, LINE_SIZE, stream);
-    init_state = atoi(buf);
-    printf("initial state: %d\n", init_state);
+    fda_init_state = atoi(buf);
+    printf("initial state: %d\n", fda_init_state);
 
     state_t rules[2 * FILE_MAX_RULES_COUNT];
     char rules_sym[FILE_MAX_RULES_COUNT];
     int rules_cnt = 0;
+
     // До конца файла ищем правила переходов
     while (fgets(buf, LINE_SIZE, stream))
     {
@@ -165,12 +148,51 @@ FDA_Spec *fda_spec_read_from(FILE *stream)
 
     printf("good.\n");
 
-    FDA_States *st = fda_states_create(fda_states, state_cnt);
-    FDA_States *st_fin = fda_states_create(fda_fin_states, fin_state_cnt);
-    FDA_Spec *spec = fda_spec_create(fda_alphabet, st, st_fin, init_state);
-
+    spec->alphabet = fda_alphabet;
+    spec->states = fda_states_create(fda_states, state_cnt);
+    spec->fin_states = fda_states_create(fda_fin_states, fin_state_cnt);
+    spec->init_state = fda_init_state;
+    
     for (int i = 0; i < rules_cnt; ++i)
-        fda_spec_add_rule(spec, rules[i], rules_sym[i], rules[FILE_MAX_RULES_COUNT + i]);
+        spec->output[rules[i]][rules_sym[i]] = rules[FILE_MAX_RULES_COUNT + i];
 
     return spec;
+}
+
+void fda_spec_output(FDA_Spec spec)
+{
+    printf(" |");
+    char *seek = spec.alphabet;
+    while (*seek)
+        printf("%c|", *seek++);
+    printf("\n");
+    for (int i = 0; i < fda_states_count(spec.states); ++i)
+    {
+        state_t state = fda_states_at(spec.states, i);
+        printf("%d|", state);
+        seek = spec.alphabet;
+        while (*seek)
+        {
+            state_t to_print = spec.output[state][*seek++ - 'a'];
+            if (to_print == FDA_OUTPUT_STATE_NONE)
+                printf("x");
+            else
+                printf("%d", to_print);
+            printf("|");
+        }
+        bool initial = state == spec.init_state;
+        bool final = fda_spec_check_is_final(spec, state);
+        if (initial || final)
+        {
+            printf(" <- ");
+            if (initial && final)
+                printf("inital and final");
+            else if (initial)
+                printf("initial");
+            else
+                printf("final");
+            printf(" state");
+        }
+        printf("\n");
+    }
 }
