@@ -50,4 +50,8 @@ int main()
     else
         printf("Word has not been recognized!\n");
     fda_free(test);
+
+    free(spec.alphabet);
+    fda_states_free(spec.states);
+    fda_states_free(spec.fin_states);
 }
