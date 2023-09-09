@@ -42,6 +42,11 @@ int main()
     {
         fda_step(test, *input);
         state_t cur = fda_get_state(test);
+        if (fda_get_output(test) == FDA_FAILED)
+        {
+            printf("Recognition failed on char '%c'\n", *input);
+            break;
+        }
         printf("Passed %c to automaton, current state is %d\n", *input, cur);
         ++input;
     }
