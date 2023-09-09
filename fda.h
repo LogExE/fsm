@@ -1,7 +1,5 @@
 #pragma once
 
-#include <stdbool.h>
-
 #include "fda_spec.h"
 
 typedef enum
