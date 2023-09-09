@@ -11,7 +11,7 @@ typedef enum
 
 typedef struct FDA fda_t;
 
-fda_t* fda_create(FDA_Spec *spec);
+fda_t *fda_create(FDA_Spec *spec);
 void fda_free(fda_t *aut);
 
 void fda_reset(fda_t *aut);

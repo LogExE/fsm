@@ -10,14 +10,14 @@ struct FDA
     int cur_state;
 };
 
-fda_t* fda_create(FDA_Spec *spec)
+fda_t *fda_create(FDA_Spec *spec)
 {
     fda_t *res = malloc(sizeof(struct FDA));
     res->spec = spec;
     return res;
 }
 
-void fda_free(fda_t * aut)
+void fda_free(fda_t *aut)
 {
     free(aut);
 }
