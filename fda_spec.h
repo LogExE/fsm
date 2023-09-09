@@ -15,8 +15,8 @@ typedef struct
 {
     char *alphabet;
 
-    fda_states_t states;
-    fda_states_t fin_states;
+    fda_states_t *states;
+    fda_states_t *fin_states;
     int init_state;
 
     state_t output[FDA_MAX_STATE_NUM][FDA_ALPHABET_SIZE];

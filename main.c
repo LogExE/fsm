@@ -25,7 +25,7 @@ int main()
 
     printf("Read automaton:\n");
     fda_spec_output(spec);
-    fda_t test = fda_create(&spec);
+    fda_t *test = fda_create(&spec);
     fda_reset(test);
 
     printf("> ");
