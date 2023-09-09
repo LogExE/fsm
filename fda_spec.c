@@ -162,8 +162,11 @@ bool fda_spec_read_from(FILE *stream, FDA_Spec *spec)
     return true;
 }
 
+#define OUTPUT_DELIM "##########\n"
+
 void fda_spec_output(FDA_Spec spec)
 {
+    printf(OUTPUT_DELIM);
     printf(" |");
     char *seek = spec.alphabet;
     while (*seek)
@@ -198,4 +201,5 @@ void fda_spec_output(FDA_Spec spec)
         }
         printf("\n");
     }
+    printf(OUTPUT_DELIM);
 }
