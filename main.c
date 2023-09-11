@@ -28,6 +28,7 @@ int main()
     fda_t *test = fda_create(&spec);
     fda_reset(test);
 
+    printf("At state %d\n", fda_get_state(test));
     printf("Now enter string.\n");
     printf("> ");
     char inp[LINE_SIZE];
@@ -41,14 +42,16 @@ int main()
 
     while (*input)
     {
+        printf("Step %d:\n", input - inp + 1);
+        printf("Passing character '%c'\n", *input);
         fda_step(test, *input);
         state_t cur = fda_get_state(test);
         if (fda_get_output(test) == FDA_FAILED)
         {
-            printf("Recognition failed on char '%c'\n", *input);
+            printf("Recognition failed!\n", input - inp + 1, *input);
             break;
         }
-        printf("Passed '%c' to automaton, current state is %d\n", *input, cur);
+        printf("State ->p %d\n", cur);
         ++input;
     }
     if (fda_get_output(test) == FDA_RECOGNIZED)
