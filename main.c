@@ -51,7 +51,7 @@ int main()
             printf("Recognition failed!\n", input - inp + 1, *input);
             break;
         }
-        printf("State ->p %d\n", cur);
+        printf("State -> %d\n", cur);
         ++input;
     }
     if (fda_get_output(test) == FDA_RECOGNIZED)
