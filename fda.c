@@ -30,7 +30,7 @@ static state_t get_out_state(const fda_t *aut, char input)
 void fda_reset(fda_t *aut)
 {
     aut->cur_state = aut->spec->init_state;
-    aut->output = FDA_NEXT;
+    aut->output = fda_spec_check_is_final(*aut->spec, aut->cur_state) ? FDA_RECOGNIZED : FDA_NEXT;
 }
 
 void fda_step(fda_t *aut, char input)

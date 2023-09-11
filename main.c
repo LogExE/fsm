@@ -48,7 +48,7 @@ int main()
             printf("Recognition failed on char '%c'\n", *input);
             break;
         }
-        printf("Passed %c to automaton, current state is %d\n", *input, cur);
+        printf("Passed '%c' to automaton, current state is %d\n", *input, cur);
         ++input;
     }
     if (fda_get_output(test) == FDA_RECOGNIZED)

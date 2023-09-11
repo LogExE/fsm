@@ -167,7 +167,7 @@ bool fda_spec_read_from(FILE *stream, FDA_Spec *spec)
 void fda_spec_output(FDA_Spec spec)
 {
     printf(OUTPUT_DELIM);
-    printf("    |");
+    printf("     |");
     char *seek = spec.alphabet;
     while (*seek)
         printf("%c|", *seek++);
@@ -180,13 +180,13 @@ void fda_spec_output(FDA_Spec spec)
         if (initial || final)
         {
             if (initial && final)
-                printf("->*");
+                printf("->* ");
             else if (initial)
-                printf("-> ");
+                printf("->  ");
             else
-                printf("*  ");
+                printf("*   ");
         }
-        else printf("   ");
+        else printf("    ");
         printf("%d|", state);
         seek = spec.alphabet;
         while (*seek)
