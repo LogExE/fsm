@@ -1,6 +1,7 @@
 #include "fda.h"
 
 #include <stdlib.h>
+#include <ctype.h>
 
 struct FDA
 {
@@ -35,6 +36,8 @@ void fda_reset(fda_t *aut)
 
 void fda_step(fda_t *aut, char input)
 {
+    if (!isalpha(input))
+        return;
     state_t new_state = get_out_state(aut, input - 'a');
     if (new_state != FDA_OUTPUT_STATE_NONE)
     {
