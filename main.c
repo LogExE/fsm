@@ -28,6 +28,7 @@ int main()
     fda_t *test = fda_create(&spec);
     fda_reset(test);
 
+    printf("Now enter string.\n");
     printf("> ");
     char inp[LINE_SIZE];
     char *input = fgets(inp, LINE_SIZE, stdin);
