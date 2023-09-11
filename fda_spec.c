@@ -167,7 +167,7 @@ bool fda_spec_read_from(FILE *stream, FDA_Spec *spec)
 void fda_spec_output(FDA_Spec spec)
 {
     printf(OUTPUT_DELIM);
-    printf(" |");
+    printf("    |");
     char *seek = spec.alphabet;
     while (*seek)
         printf("%c|", *seek++);
@@ -175,29 +175,28 @@ void fda_spec_output(FDA_Spec spec)
     for (int i = 0; i < fda_states_count(spec.states); ++i)
     {
         state_t state = fda_states_at(spec.states, i);
+        bool initial = state == spec.init_state;
+        bool final = fda_spec_check_is_final(spec, state);
+        if (initial || final)
+        {
+            if (initial && final)
+                printf("*->");
+            else if (initial)
+                printf("-> ");
+            else
+                printf("*  ");
+        }
+        else printf("   ");
         printf("%d|", state);
         seek = spec.alphabet;
         while (*seek)
         {
             state_t to_print = spec.output[state][*seek++ - 'a'];
             if (to_print == FDA_OUTPUT_STATE_NONE)
-                printf("x");
+                printf("-");
             else
                 printf("%d", to_print);
             printf("|");
-        }
-        bool initial = state == spec.init_state;
-        bool final = fda_spec_check_is_final(spec, state);
-        if (initial || final)
-        {
-            printf(" <- ");
-            if (initial && final)
-                printf("inital and final");
-            else if (initial)
-                printf("initial");
-            else
-                printf("final");
-            printf(" state");
         }
         printf("\n");
     }
