@@ -180,7 +180,7 @@ void fda_spec_output(FDA_Spec spec)
         if (initial || final)
         {
             if (initial && final)
-                printf("*->");
+                printf("->*");
             else if (initial)
                 printf("-> ");
             else
