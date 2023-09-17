@@ -9,3 +9,5 @@ add_executable(fsm
     fsm_spec.c
     fsm_array.c
 )
+
+target_compile_options(fsm PRIVATE -Wall -Wextra -Wpedantic)

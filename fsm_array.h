@@ -1,12 +1,11 @@
 #pragma once
 
-#include "fsm.h"
+struct FSM;
+struct FSM_Array;
 
-typedef struct FSM_Array fsm_array_t;
+struct FSM_Array *fsm_array_create();
+void fsm_array_free(struct FSM_Array *arr);
 
-fsm_array_t *fsm_array_create();
-void fsm_array_free(fsm_array_t *arr);
-
-void fsm_array_add(fsm_array_t *arr, fsm_t *aut);
-fsm_t *fsm_array_at(const fsm_array_t *arr, int idx);
-int fsm_array_count(const fsm_array_t *arr);
+void fsm_array_add(struct FSM_Array *arr, struct FSM *aut);
+struct FSM *fsm_array_at(const struct FSM_Array *arr, int idx);
+int fsm_array_count(const struct FSM_Array *arr);

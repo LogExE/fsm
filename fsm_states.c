@@ -4,29 +4,42 @@
 
 struct FSM_States
 {
-    state_t *values;
+    fsm_state_t *values;
     int count;
+    int capacity;
 };
 
-fsm_states_t *fsm_states_create(state_t *values, int count)
+struct FSM_States *fsm_states_create()
 {
-    fsm_states_t *res = malloc(sizeof(struct FSM_States));
-    res->count = count;
-    res->values = values;
-    return res;
+    struct FSM_States *ret = malloc(sizeof(struct FSM_States));
+    ret->capacity = 2;
+    ret->values = malloc(ret->capacity * sizeof(fsm_state_t));
+    ret->count = 0;
+    return ret;
 }
 
-void fsm_states_free(fsm_states_t *states)
+void fsm_states_free(struct FSM_States *states)
 {
     free(states->values);
 }
 
-state_t fsm_states_at(const fsm_states_t *states, int i)
+void fsm_states_add(struct FSM_States *arr, fsm_state_t state)
+{
+    if (arr->count >= arr->capacity)
+    {
+        arr->capacity *= 2;
+        arr->values = realloc(arr->values, arr->capacity * sizeof(fsm_state_t));
+    }
+    arr->values[arr->count] = state;
+    ++arr->count;
+}
+
+fsm_state_t fsm_states_at(const struct FSM_States *states, int i)
 {
     return states->values[i];
 }
 
-int fsm_states_count(const fsm_states_t *states)
+int fsm_states_count(const struct FSM_States *states)
 {
     return states->count;
 }

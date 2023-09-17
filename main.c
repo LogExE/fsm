@@ -25,10 +25,9 @@ int main()
 
     printf("Read automaton:\n");
     fsm_spec_output(spec);
-    fsm_t *test = fsm_create(&spec);
-    fsm_reset(test);
+    struct FSM_Array *automata = fsm_array_create();
+    fsm_array_add(automata, fsm_create(&spec));
 
-    printf("At state %d\n", fsm_get_state(test));
     printf("Now enter string.\n");
     printf("> ");
     char inp[LINE_SIZE];
@@ -40,25 +39,35 @@ int main()
     }
     inp[strcspn(inp, "\n")] = '\0';
 
+    int failed_count = 0;
+
     while (*input)
     {
         printf("Step %d:\n", input - inp + 1);
         printf("Passing character '%c'\n", *input);
-        fsm_step(test, *input);
-        state_t cur = fsm_get_state(test);
-        if (fsm_get_output(test) == FSM_FAILED)
+        int aut_count = fsm_array_count(automata);
+        for (int i = 0; i < aut_count; ++i)
         {
-            printf("Recognition failed!\n", input - inp + 1, *input);
-            break;
+            printf("For automaton %d:\n", i);
+            struct FSM *aut = fsm_array_at(automata, i);
+            struct FSM_Array *new_aut = fsm_step(aut, *input);
+
+            if (new_aut != NULL)
+                for (int j = 0; j < fsm_array_count(new_aut); ++j)
+                    fsm_array_add(automata, fsm_array_at(new_aut, j));
         }
-        printf("State -> %d\n", cur);
         ++input;
     }
-    if (fsm_get_output(test) == FSM_RECOGNIZED)
-        printf("Word has been recognized!\n");
-    else
-        printf("Word has not been recognized!\n");
-    fsm_free(test);
+    for (int i = 0; i < fsm_array_count(automata); ++i)
+    {
+        struct FSM *aut = fsm_array_at(automata, i);
+        if (fsm_get_output(aut) == FSM_RECOGNIZED)
+            printf("Word has been recognized!\n");
+        else
+            printf("Word has not been recognized!\n");
+    }
+
+    fsm_array_free(automata);
 
     free(spec.alphabet);
     fsm_states_free(spec.states);

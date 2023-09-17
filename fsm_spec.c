@@ -4,7 +4,7 @@
 #include <string.h>
 #include <ctype.h>
 
-bool fsm_spec_check_is_final(FSM_Spec spec, state_t state)
+bool fsm_spec_check_is_final(FSM_Spec spec, fsm_state_t state)
 {
     for (int i = 0; i < fsm_states_count(spec.fin_states); ++i)
         if (fsm_states_at(spec.fin_states, i) == state)
@@ -17,10 +17,8 @@ bool fsm_spec_read_from(FILE *stream, FSM_Spec *spec)
     // Заготовочка переменных
     char *fsm_alphabet;
     int alph_cnt = 0;
-    state_t *fsm_states = NULL;
-    int state_cnt = 0;
-    state_t *fsm_fin_states = NULL;
-    int fin_state_cnt = 0;
+    struct FSM_States *fsm_states = fsm_states_create();
+    struct FSM_States *fsm_fin_states = fsm_states_create();
     int fsm_init_state;
 
     // Буфер для считывания строк потока
@@ -74,29 +72,24 @@ bool fsm_spec_read_from(FILE *stream, FSM_Spec *spec)
 
     if (buf[0] == '!')
     {
-        state_cnt = atoi(buf + 1);
-        fsm_states = malloc(state_cnt * sizeof(state_t));
-        for (int i = 0; i < state_cnt; ++i)
-            fsm_states[i] = i + 1;
+        int state_cnt = atoi(buf + 1);
+        for (int i = 1; i <= state_cnt; ++i)
+            fsm_states_add(fsm_states, i);
     }
     else
     {
         char *seek = buf;
         char *end = NULL;
-        state_t pre_states[buf_len];
         while (1)
         {
-            pre_states[state_cnt] = strtol(seek, &end, 10);
+            fsm_state_t state = strtol(seek, &end, 10);
             if (seek == end)
                 break;
             seek = end;
-            ++state_cnt;
+            fsm_states_add(fsm_states, state);
         }
-        fsm_states = malloc(state_cnt * sizeof(state_t));
-        for (int i = 0; i < state_cnt; ++i)
-            fsm_states[i] = pre_states[i];
     }
-    printf("total states found: %d\n", state_cnt);
+    printf("total states found: %d\n", fsm_states_count(fsm_states));
 
     // Читаем финальные состояния
     fgets(buf, LINE_SIZE, stream);
@@ -105,28 +98,25 @@ bool fsm_spec_read_from(FILE *stream, FSM_Spec *spec)
     {
         char *seek = buf;
         char *end = NULL;
-        state_t pre_states[buf_len];
         while (1)
         {
-            pre_states[fin_state_cnt] = strtol(seek, &end, 10);
+            fsm_state_t fin_state = strtol(seek, &end, 10);
             if (seek == end)
                 break;
             seek = end;
-            ++fin_state_cnt;
+            fsm_states_add(fsm_fin_states, fin_state);
         }
-        fsm_fin_states = malloc(fin_state_cnt * sizeof(state_t));
-        for (int i = 0; i < fin_state_cnt; ++i)
-            fsm_fin_states[i] = pre_states[i];
     }
-    printf("total final states found:  %d\n", fin_state_cnt);
+    printf("total final states found:  %d\n", fsm_states_count(fsm_fin_states));
 
     // Читаем начальное состояние
     fgets(buf, LINE_SIZE, stream);
     fsm_init_state = atoi(buf);
     printf("initial state: %d\n", fsm_init_state);
 
-    state_t rules[2 * FILE_MAX_RULES_COUNT];
+    fsm_state_t rules_in[FILE_MAX_RULES_COUNT];
     char rules_sym[FILE_MAX_RULES_COUNT];
+    struct FSM_States *rules_out[FILE_MAX_RULES_COUNT];
     int rules_cnt = 0;
 
     // До конца файла ищем правила переходов
@@ -134,30 +124,41 @@ bool fsm_spec_read_from(FILE *stream, FSM_Spec *spec)
     {
         char *seek = buf;
         char *end = NULL;
-        rules[rules_cnt] = strtol(seek, &end, 10);
+        // состояние до
+        rules_in[rules_cnt] = strtol(seek, &end, 10);
         seek = end + 1; // пропуск пробела
+        // вход
         rules_sym[rules_cnt] = *seek - 'a';
-        ++seek; // пропуск пробела
-        rules[FILE_MAX_RULES_COUNT + rules_cnt] = strtol(seek, &end, 10);
-        printf("found rule: (%d, %c) -> %d\n",
-               rules[rules_cnt],
-               rules_sym[rules_cnt] + 'a',
-               rules[FILE_MAX_RULES_COUNT + rules_cnt]);
+        ++seek;
+        // следующие состояния
+        rules_out[rules_cnt] = fsm_states_create();
+        seek = strtok(seek, ",");
+        while (seek != NULL)
+        {
+            fsm_states_add(rules_out[rules_cnt], atoi(seek));
+            seek = strtok(NULL, ",");
+        }
+        printf("found rule: (%d, %c) -> ",
+               rules_in[rules_cnt],
+               rules_sym[rules_cnt] + 'a');
+        for (int i = 0; i < fsm_states_count(rules_out[rules_cnt]); ++i)
+            printf("%d ", fsm_states_at(rules_out[rules_cnt], i));
+        printf("\n");
         ++rules_cnt;
     }
 
     printf("good.\n");
 
     spec->alphabet = fsm_alphabet;
-    spec->states = fsm_states_create(fsm_states, state_cnt);
-    spec->fin_states = fsm_states_create(fsm_fin_states, fin_state_cnt);
+    spec->states = fsm_states;
+    spec->fin_states = fsm_fin_states;
     spec->init_state = fsm_init_state;
 
-    for (state_t state; state < FSM_MAX_STATE_NUM; ++state)
+    for (fsm_state_t state = 0; state < FSM_MAX_STATE_NUM; ++state)
         for (int i = 0; i < FSM_ALPHABET_SIZE; ++i)
-            spec->output[state][i] = FSM_OUTPUT_STATE_NONE;
+            spec->output[state][i] = NULL;
     for (int i = 0; i < rules_cnt; ++i)
-        spec->output[rules[i]][rules_sym[i]] = rules[FILE_MAX_RULES_COUNT + i];
+        spec->output[rules_in[i]][rules_sym[i]] = rules_out[i];
 
     return true;
 }
@@ -174,7 +175,7 @@ void fsm_spec_output(FSM_Spec spec)
     printf("\n");
     for (int i = 0; i < fsm_states_count(spec.states); ++i)
     {
-        state_t state = fsm_states_at(spec.states, i);
+        fsm_state_t state = fsm_states_at(spec.states, i);
         bool initial = state == spec.init_state;
         bool final = fsm_spec_check_is_final(spec, state);
         if (initial || final)
@@ -186,16 +187,18 @@ void fsm_spec_output(FSM_Spec spec)
             else
                 printf("*   ");
         }
-        else printf("    ");
+        else
+            printf("    ");
         printf("%d|", state);
         seek = spec.alphabet;
         while (*seek)
         {
-            state_t to_print = spec.output[state][*seek++ - 'a'];
-            if (to_print == FSM_OUTPUT_STATE_NONE)
+            struct FSM_States *to_print = spec.output[state][*seek++ - 'a'];
+            if (to_print == NULL)
                 printf("-");
             else
-                printf("%d", to_print);
+                for (int j = 0; j < fsm_states_count(to_print); ++j)
+                    printf("%d ", fsm_states_at(to_print, j));
             printf("|");
         }
         printf("\n");
