@@ -19,7 +19,7 @@ typedef struct
     fsm_states_t *fin_states;
     int init_state;
 
-    state_t output[FSM_MAX_STATE_NUM][FSM_ALPHABET_SIZE];
+    fsm_states_t *output[FSM_MAX_STATE_NUM][FSM_ALPHABET_SIZE];
 } FSM_Spec;
 
 bool fsm_spec_check_is_final(FSM_Spec spec, state_t state);

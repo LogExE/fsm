@@ -7,4 +7,5 @@ add_executable(fsm
     fsm.c
     fsm_states.c
     fsm_spec.c
+    fsm_array.c
 )
