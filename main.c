@@ -43,6 +43,7 @@ int main()
 
     while (*input)
     {
+        printf("========\n");
         printf("Step %d:\n", input - inp + 1);
         printf("Passing character '%c'\n", *input);
         int aut_count = fsm_array_count(automata);
@@ -53,11 +54,16 @@ int main()
             struct FSM_Array *new_aut = fsm_step(aut, *input);
 
             if (new_aut != NULL)
+            {
                 for (int j = 0; j < fsm_array_count(new_aut); ++j)
                     fsm_array_add(automata, fsm_array_at(new_aut, j));
+                printf("Cloned, new %d automata\n", fsm_array_count(new_aut));
+            }
+            else printf("No new automata, state is now %d\n", fsm_get_state(aut));
         }
         ++input;
     }
+    printf("========\n");
     for (int i = 0; i < fsm_array_count(automata); ++i)
     {
         struct FSM *aut = fsm_array_at(automata, i);
