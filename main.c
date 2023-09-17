@@ -59,7 +59,8 @@ int main()
                     fsm_array_add(automata, fsm_array_at(new_aut, j));
                 printf("Cloned, new %d automata\n", fsm_array_count(new_aut));
             }
-            else printf("No new automata, state is now %d\n", fsm_get_state(aut));
+            else
+                printf("No new automata, state is now %d\n", fsm_get_state(aut));
         }
         ++input;
     }
@@ -68,11 +69,13 @@ int main()
     {
         struct FSM *aut = fsm_array_at(automata, i);
         if (fsm_get_output(aut) == FSM_RECOGNIZED)
+        {
             printf("Word has been recognized!\n");
-        else
-            printf("Word has not been recognized!\n");
+            goto cleanup;
+        }
     }
-
+    printf("Word has not been recognized!\n");
+cleanup:
     fsm_array_free(automata);
 
     free(spec.alphabet);

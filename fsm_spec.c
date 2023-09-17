@@ -4,6 +4,8 @@
 #include <string.h>
 #include <ctype.h>
 
+#define MAX(X, Y) (((X) > (Y)) ? (X) : (Y))
+
 bool fsm_spec_check_is_final(FSM_Spec spec, fsm_state_t state)
 {
     for (int i = 0; i < fsm_states_count(spec.fin_states); ++i)
@@ -235,28 +237,61 @@ alpha_fail:
 
 #define OUTPUT_DELIM "##########\n"
 
+static int int_digits(int x)
+{
+    int res = 1;
+    while (x >= 10)
+    {
+        x /= 10;
+        ++res;
+    }
+    return res;
+}
+
+static int get_max_len(FSM_Spec spec)
+{
+    int res = 0;
+    for (int i = 0; i < fsm_states_count(spec.states); ++i)
+    {
+        fsm_state_t state = fsm_states_at(spec.states, i);
+        char *seek = spec.alphabet;
+        while (*seek)
+        {
+            struct FSM_States *to_print = spec.output[state][*seek++ - 'a'];
+            if (to_print == NULL)
+                res = MAX(res, 1);
+            else
+            {
+                int sum = int_digits(fsm_states_at(to_print, 0));
+                for (int j = 1; j < fsm_states_count(to_print); ++j)
+                    sum += int_digits(fsm_states_at(to_print, j)) + 1;
+                res = MAX(res, sum);
+            }
+        }
+    }
+    return res;
+}
+
 void fsm_spec_output(FSM_Spec spec)
 {
+    int spaces = get_max_len(spec) + 1;
     printf(OUTPUT_DELIM);
     printf("     |");
     char *seek = spec.alphabet;
     while (*seek)
-        printf("%c|", *seek++);
+        printf("%*c|", spaces, *seek++);
     printf("\n");
     for (int i = 0; i < fsm_states_count(spec.states); ++i)
     {
         fsm_state_t state = fsm_states_at(spec.states, i);
         bool initial = state == spec.init_state;
         bool final = fsm_spec_check_is_final(spec, state);
-        if (initial || final)
-        {
-            if (initial && final)
-                printf("->* ");
-            else if (initial)
-                printf("->  ");
-            else
-                printf("*   ");
-        }
+        if (initial && final)
+            printf("->* ");
+        else if (initial)
+            printf("->  ");
+        else if (final)
+            printf("*   ");
         else
             printf("    ");
         printf("%d|", state);
@@ -265,10 +300,17 @@ void fsm_spec_output(FSM_Spec spec)
         {
             struct FSM_States *to_print = spec.output[state][*seek++ - 'a'];
             if (to_print == NULL)
-                printf("-");
+                printf("%*c", spaces, '-');
             else
-                for (int j = 0; j < fsm_states_count(to_print); ++j)
-                    printf("%d ", fsm_states_at(to_print, j));
+            {
+                char target_buf[LINE_SIZE];
+                char *target = target_buf;
+                target += sprintf(target, "%d", fsm_states_at(to_print, 0));
+                for (int j = 1; j < fsm_states_count(to_print); ++j)
+                    target += sprintf(target, " %d", fsm_states_at(to_print, j));
+                *target = '\0';
+                printf("%*s", spaces, target_buf);
+            }
             printf("|");
         }
         printf("\n");
