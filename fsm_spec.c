@@ -12,6 +12,27 @@ bool fsm_spec_check_is_final(FSM_Spec spec, fsm_state_t state)
     return false;
 }
 
+// > 0 - how many chars read
+// == 0 - EOF
+// -1 - stream error
+// -2 - too many chars
+static int buf_readline(char *buf, FILE *stream)
+{
+    char *gets_res = fgets(buf, LINE_SIZE, stream);
+    if (gets_res == NULL)
+    {
+        if (feof(stream))
+            return 0;
+        else
+            return -1;
+    }
+    int buf_len = strlen(buf);
+    if (buf[buf_len - 1] != '\n' && !feof(stream))
+        return -2;
+    buf[buf_len - 1] = '\0';
+    return buf_len;
+}
+
 bool fsm_spec_read_from(FILE *stream, FSM_Spec *spec)
 {
     // Заготовочка переменных
@@ -26,14 +47,17 @@ bool fsm_spec_read_from(FILE *stream, FSM_Spec *spec)
     int buf_len;
 
     // Читаем алфавит
-    fgets(buf, LINE_SIZE, stream);
-    buf_len = strlen(buf);
-    if (buf[buf_len - 1] != '\n')
+    buf_len = buf_readline(buf, stream);
+    if (buf_len == -1)
     {
-        fprintf(stderr, "Line was too long!\n");
-        return false;
+        fprintf(stderr, "Error while reading alphabet!\n");
+        goto alpha_fail;
     }
-    buf[buf_len - 1] = '\0';
+    else if (buf_len == -2)
+    {
+        fprintf(stderr, "Alphabet line was too long!\n");
+        goto alpha_fail;
+    }
 
     if (buf[0] == '!')
     {
@@ -41,7 +65,7 @@ bool fsm_spec_read_from(FILE *stream, FSM_Spec *spec)
         if (alph_cnt > FSM_ALPHABET_SIZE)
         {
             fprintf(stderr, "Expected alphabet size <= %d, found %d symbols!\n", FSM_ALPHABET_SIZE, alph_cnt);
-            return false;
+            goto alpha_fail;
         }
         fsm_alphabet = malloc(alph_cnt + 1);
         for (int i = 0; i < alph_cnt; ++i)
@@ -55,7 +79,7 @@ bool fsm_spec_read_from(FILE *stream, FSM_Spec *spec)
             if (!isalpha(*ptr))
             {
                 fprintf(stderr, "Expected alphabet to be english alphabet, found symbol '%c'!\n", *ptr);
-                return false;
+                goto alpha_fail;
             }
             ++ptr;
         }
@@ -67,8 +91,17 @@ bool fsm_spec_read_from(FILE *stream, FSM_Spec *spec)
     printf("Alphabet: \"%s\", size %d\n", fsm_alphabet, alph_cnt);
 
     // Читаем возможные состояния автомата
-    fgets(buf, LINE_SIZE, stream);
-    buf_len = strlen(buf);
+    buf_len = buf_readline(buf, stream);
+    if (buf_len == -1)
+    {
+        fprintf(stderr, "Error while reading states!\n");
+        goto other_fail;
+    }
+    else if (buf_len == -2)
+    {
+        fprintf(stderr, "States line was too long!\n");
+        goto other_fail;
+    }
 
     if (buf[0] == '!')
     {
@@ -92,8 +125,17 @@ bool fsm_spec_read_from(FILE *stream, FSM_Spec *spec)
     printf("total states found: %d\n", fsm_states_count(fsm_states));
 
     // Читаем финальные состояния
-    fgets(buf, LINE_SIZE, stream);
-    buf_len = strlen(buf);
+    buf_len = buf_readline(buf, stream);
+    if (buf_len == -1)
+    {
+        fprintf(stderr, "Error while reading final states!\n");
+        goto other_fail;
+    }
+    else if (buf_len == -2)
+    {
+        fprintf(stderr, "Final states line was too long!\n");
+        goto other_fail;
+    }
 
     {
         char *seek = buf;
@@ -110,7 +152,18 @@ bool fsm_spec_read_from(FILE *stream, FSM_Spec *spec)
     printf("total final states found:  %d\n", fsm_states_count(fsm_fin_states));
 
     // Читаем начальное состояние
-    fgets(buf, LINE_SIZE, stream);
+    buf_len = buf_readline(buf, stream);
+    if (buf_len == -1)
+    {
+        fprintf(stderr, "Error while reading initial state!\n");
+        goto other_fail;
+    }
+    else if (buf_len == -2)
+    {
+        fprintf(stderr, "Initial state line was too long!\n");
+        goto other_fail;
+    }
+
     fsm_init_state = atoi(buf);
     printf("initial state: %d\n", fsm_init_state);
 
@@ -120,7 +173,8 @@ bool fsm_spec_read_from(FILE *stream, FSM_Spec *spec)
     int rules_cnt = 0;
 
     // До конца файла ищем правила переходов
-    while (fgets(buf, LINE_SIZE, stream))
+
+    while ((buf_len = buf_readline(buf, stream)) > 0)
     {
         char *seek = buf;
         char *end = NULL;
@@ -147,6 +201,17 @@ bool fsm_spec_read_from(FILE *stream, FSM_Spec *spec)
         ++rules_cnt;
     }
 
+    if (buf_len == -1)
+    {
+        fprintf(stderr, "Error while reading rule!\n");
+        goto other_fail;
+    }
+    else if (buf_len == -2)
+    {
+        fprintf(stderr, "Rule line was too long!\n");
+        goto other_fail;
+    }
+
     printf("good.\n");
 
     spec->alphabet = fsm_alphabet;
@@ -159,8 +224,13 @@ bool fsm_spec_read_from(FILE *stream, FSM_Spec *spec)
             spec->output[state][i] = NULL;
     for (int i = 0; i < rules_cnt; ++i)
         spec->output[rules_in[i]][rules_sym[i]] = rules_out[i];
-
     return true;
+other_fail:
+    free(fsm_alphabet);
+alpha_fail:
+    fsm_states_free(fsm_states);
+    fsm_states_free(fsm_fin_states);
+    return false;
 }
 
 #define OUTPUT_DELIM "##########\n"
