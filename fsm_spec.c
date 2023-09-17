@@ -31,7 +31,8 @@ static int buf_readline(char *buf, FILE *stream)
     int buf_len = strlen(buf);
     if (buf[buf_len - 1] != '\n' && !feof(stream))
         return -2;
-    buf[buf_len - 1] = '\0';
+    if (buf[buf_len - 1] == '\n')
+        buf[buf_len - 1] = '\0';
     return buf_len;
 }
 
