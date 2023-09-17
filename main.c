@@ -2,33 +2,33 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "fda.h"
+#include "fsm.h"
 
-#define FDA_FILE "input.txt"
+#define FSM_FILE "input.txt"
 
 int main()
 {
-    FILE *file = fopen(FDA_FILE, "r");
+    FILE *file = fopen(FSM_FILE, "r");
     if (file == NULL)
     {
-        fprintf(stderr, "File %s doesn't exist!\n", FDA_FILE);
+        fprintf(stderr, "File %s doesn't exist!\n", FSM_FILE);
         return 1;
     }
-    FDA_Spec spec;
-    bool read = fda_spec_read_from(file, &spec);
+    FSM_Spec spec;
+    bool read = fsm_spec_read_from(file, &spec);
     if (!read)
     {
-        fprintf(stderr, "Failed to read FDA.\n");
+        fprintf(stderr, "Failed to read FSM.\n");
         return 1;
     }
     fclose(file);
 
     printf("Read automaton:\n");
-    fda_spec_output(spec);
-    fda_t *test = fda_create(&spec);
-    fda_reset(test);
+    fsm_spec_output(spec);
+    fsm_t *test = fsm_create(&spec);
+    fsm_reset(test);
 
-    printf("At state %d\n", fda_get_state(test));
+    printf("At state %d\n", fsm_get_state(test));
     printf("Now enter string.\n");
     printf("> ");
     char inp[LINE_SIZE];
@@ -44,9 +44,9 @@ int main()
     {
         printf("Step %d:\n", input - inp + 1);
         printf("Passing character '%c'\n", *input);
-        fda_step(test, *input);
-        state_t cur = fda_get_state(test);
-        if (fda_get_output(test) == FDA_FAILED)
+        fsm_step(test, *input);
+        state_t cur = fsm_get_state(test);
+        if (fsm_get_output(test) == FSM_FAILED)
         {
             printf("Recognition failed!\n", input - inp + 1, *input);
             break;
@@ -54,13 +54,13 @@ int main()
         printf("State -> %d\n", cur);
         ++input;
     }
-    if (fda_get_output(test) == FDA_RECOGNIZED)
+    if (fsm_get_output(test) == FSM_RECOGNIZED)
         printf("Word has been recognized!\n");
     else
         printf("Word has not been recognized!\n");
-    fda_free(test);
+    fsm_free(test);
 
     free(spec.alphabet);
-    fda_states_free(spec.states);
-    fda_states_free(spec.fin_states);
+    fsm_states_free(spec.states);
+    fsm_states_free(spec.fin_states);
 }

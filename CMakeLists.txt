@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.10)
 
-project("fda")
+project("fsm")
 
-add_executable(fda
+add_executable(fsm
     main.c
-    fda.c
-    fda_states.c
-    fda_spec.c
+    fsm.c
+    fsm_states.c
+    fsm_spec.c
 )

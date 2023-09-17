@@ -1,27 +1,27 @@
-#include "fda_spec.h"
+#include "fsm_spec.h"
 
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 
-bool fda_spec_check_is_final(FDA_Spec spec, state_t state)
+bool fsm_spec_check_is_final(FSM_Spec spec, state_t state)
 {
-    for (int i = 0; i < fda_states_count(spec.fin_states); ++i)
-        if (fda_states_at(spec.fin_states, i) == state)
+    for (int i = 0; i < fsm_states_count(spec.fin_states); ++i)
+        if (fsm_states_at(spec.fin_states, i) == state)
             return true;
     return false;
 }
 
-bool fda_spec_read_from(FILE *stream, FDA_Spec *spec)
+bool fsm_spec_read_from(FILE *stream, FSM_Spec *spec)
 {
     // Заготовочка переменных
-    char *fda_alphabet;
+    char *fsm_alphabet;
     int alph_cnt = 0;
-    state_t *fda_states = NULL;
+    state_t *fsm_states = NULL;
     int state_cnt = 0;
-    state_t *fda_fin_states = NULL;
+    state_t *fsm_fin_states = NULL;
     int fin_state_cnt = 0;
-    int fda_init_state;
+    int fsm_init_state;
 
     // Буфер для считывания строк потока
     char buf[LINE_SIZE];
@@ -40,14 +40,14 @@ bool fda_spec_read_from(FILE *stream, FDA_Spec *spec)
     if (buf[0] == '!')
     {
         alph_cnt = atoi(buf + 1);
-        if (alph_cnt > FDA_ALPHABET_SIZE)
+        if (alph_cnt > FSM_ALPHABET_SIZE)
         {
-            fprintf(stderr, "Expected alphabet size <= %d, found %d symbols!\n", FDA_ALPHABET_SIZE, alph_cnt);
+            fprintf(stderr, "Expected alphabet size <= %d, found %d symbols!\n", FSM_ALPHABET_SIZE, alph_cnt);
             return false;
         }
-        fda_alphabet = malloc(alph_cnt + 1);
+        fsm_alphabet = malloc(alph_cnt + 1);
         for (int i = 0; i < alph_cnt; ++i)
-            fda_alphabet[i] = 'a' + i;
+            fsm_alphabet[i] = 'a' + i;
     }
     else
     {
@@ -62,11 +62,11 @@ bool fda_spec_read_from(FILE *stream, FDA_Spec *spec)
             ++ptr;
         }
         alph_cnt = ptr - buf + 1;
-        fda_alphabet = malloc(alph_cnt + 1);
-        memcpy(fda_alphabet, buf, alph_cnt);
+        fsm_alphabet = malloc(alph_cnt + 1);
+        memcpy(fsm_alphabet, buf, alph_cnt);
     }
-    fda_alphabet[alph_cnt] = '\0';
-    printf("Alphabet: \"%s\", size %d\n", fda_alphabet, alph_cnt);
+    fsm_alphabet[alph_cnt] = '\0';
+    printf("Alphabet: \"%s\", size %d\n", fsm_alphabet, alph_cnt);
 
     // Читаем возможные состояния автомата
     fgets(buf, LINE_SIZE, stream);
@@ -75,9 +75,9 @@ bool fda_spec_read_from(FILE *stream, FDA_Spec *spec)
     if (buf[0] == '!')
     {
         state_cnt = atoi(buf + 1);
-        fda_states = malloc(state_cnt * sizeof(state_t));
+        fsm_states = malloc(state_cnt * sizeof(state_t));
         for (int i = 0; i < state_cnt; ++i)
-            fda_states[i] = i + 1;
+            fsm_states[i] = i + 1;
     }
     else
     {
@@ -92,9 +92,9 @@ bool fda_spec_read_from(FILE *stream, FDA_Spec *spec)
             seek = end;
             ++state_cnt;
         }
-        fda_states = malloc(state_cnt * sizeof(state_t));
+        fsm_states = malloc(state_cnt * sizeof(state_t));
         for (int i = 0; i < state_cnt; ++i)
-            fda_states[i] = pre_states[i];
+            fsm_states[i] = pre_states[i];
     }
     printf("total states found: %d\n", state_cnt);
 
@@ -114,16 +114,16 @@ bool fda_spec_read_from(FILE *stream, FDA_Spec *spec)
             seek = end;
             ++fin_state_cnt;
         }
-        fda_fin_states = malloc(fin_state_cnt * sizeof(state_t));
+        fsm_fin_states = malloc(fin_state_cnt * sizeof(state_t));
         for (int i = 0; i < fin_state_cnt; ++i)
-            fda_fin_states[i] = pre_states[i];
+            fsm_fin_states[i] = pre_states[i];
     }
     printf("total final states found:  %d\n", fin_state_cnt);
 
     // Читаем начальное состояние
     fgets(buf, LINE_SIZE, stream);
-    fda_init_state = atoi(buf);
-    printf("initial state: %d\n", fda_init_state);
+    fsm_init_state = atoi(buf);
+    printf("initial state: %d\n", fsm_init_state);
 
     state_t rules[2 * FILE_MAX_RULES_COUNT];
     char rules_sym[FILE_MAX_RULES_COUNT];
@@ -148,14 +148,14 @@ bool fda_spec_read_from(FILE *stream, FDA_Spec *spec)
 
     printf("good.\n");
 
-    spec->alphabet = fda_alphabet;
-    spec->states = fda_states_create(fda_states, state_cnt);
-    spec->fin_states = fda_states_create(fda_fin_states, fin_state_cnt);
-    spec->init_state = fda_init_state;
+    spec->alphabet = fsm_alphabet;
+    spec->states = fsm_states_create(fsm_states, state_cnt);
+    spec->fin_states = fsm_states_create(fsm_fin_states, fin_state_cnt);
+    spec->init_state = fsm_init_state;
 
-    for (state_t state; state < FDA_MAX_STATE_NUM; ++state)
-        for (int i = 0; i < FDA_ALPHABET_SIZE; ++i)
-            spec->output[state][i] = FDA_OUTPUT_STATE_NONE;
+    for (state_t state; state < FSM_MAX_STATE_NUM; ++state)
+        for (int i = 0; i < FSM_ALPHABET_SIZE; ++i)
+            spec->output[state][i] = FSM_OUTPUT_STATE_NONE;
     for (int i = 0; i < rules_cnt; ++i)
         spec->output[rules[i]][rules_sym[i]] = rules[FILE_MAX_RULES_COUNT + i];
 
@@ -164,7 +164,7 @@ bool fda_spec_read_from(FILE *stream, FDA_Spec *spec)
 
 #define OUTPUT_DELIM "##########\n"
 
-void fda_spec_output(FDA_Spec spec)
+void fsm_spec_output(FSM_Spec spec)
 {
     printf(OUTPUT_DELIM);
     printf("     |");
@@ -172,11 +172,11 @@ void fda_spec_output(FDA_Spec spec)
     while (*seek)
         printf("%c|", *seek++);
     printf("\n");
-    for (int i = 0; i < fda_states_count(spec.states); ++i)
+    for (int i = 0; i < fsm_states_count(spec.states); ++i)
     {
-        state_t state = fda_states_at(spec.states, i);
+        state_t state = fsm_states_at(spec.states, i);
         bool initial = state == spec.init_state;
-        bool final = fda_spec_check_is_final(spec, state);
+        bool final = fsm_spec_check_is_final(spec, state);
         if (initial || final)
         {
             if (initial && final)
@@ -192,7 +192,7 @@ void fda_spec_output(FDA_Spec spec)
         while (*seek)
         {
             state_t to_print = spec.output[state][*seek++ - 'a'];
-            if (to_print == FDA_OUTPUT_STATE_NONE)
+            if (to_print == FSM_OUTPUT_STATE_NONE)
                 printf("-");
             else
                 printf("%d", to_print);
