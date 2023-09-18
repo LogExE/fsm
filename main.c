@@ -46,28 +46,30 @@ int main()
 
         while (*input)
         {
-            printf("========\n");
+            printf("==================\n");
             printf("Step %d:\n", input - inp + 1);
             printf("Passing character '%c'\n", *input);
             int aut_count = fsm_array_count(automata);
             for (int i = 0; i < aut_count; ++i)
             {
-                printf("For automaton %d:\n", i);
                 struct FSM *aut = fsm_array_at(automata, i);
+                printf("=> Automaton %d, state %d:\n", i, fsm_get_state(aut));
                 struct FSM_Array *new_aut = fsm_step(aut, *input);
 
                 if (new_aut != NULL)
                 {
                     for (int j = 0; j < fsm_array_count(new_aut); ++j)
-                        fsm_array_add(automata, fsm_array_at(new_aut, j));
-                    printf("Cloned, new %d automata\n", fsm_array_count(new_aut));
+                    {
+                        struct FSM *aut_clone = fsm_array_at(new_aut, j);
+                        fsm_array_add(automata, aut_clone);
+                        printf("Clone: automaton %d, state %d\n", fsm_array_count(automata) - 1, fsm_get_state(aut_clone));
+                    }
                 }
-                else
-                    printf("No new automata, state is now %d\n", fsm_get_state(aut));
+                printf("State is now %d\n", fsm_get_state(aut));
             }
             ++input;
         }
-        printf("========\n");
+        printf("==================\n");
         printf("Result: ");
         for (int i = 0; i < fsm_array_count(automata); ++i)
         {
