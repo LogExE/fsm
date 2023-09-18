@@ -82,8 +82,6 @@ int main()
     next:
         fsm_array_free(automata);
     }
-cleanup:
-
     free(spec.alphabet);
     fsm_states_free(spec.states);
     fsm_states_free(spec.fin_states);
