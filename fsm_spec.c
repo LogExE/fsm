@@ -45,6 +45,8 @@ bool fsm_spec_read_from(FILE *stream, FSM_Spec *spec)
     struct FSM_States *fsm_fin_states = fsm_states_create();
     int fsm_init_state;
 
+    printf("Reading automata spec from file...\n");
+
     // Буфер для считывания строк потока
     char buf[LINE_SIZE];
     int buf_len;
@@ -76,7 +78,7 @@ bool fsm_spec_read_from(FILE *stream, FSM_Spec *spec)
     }
     else
     {
-        char *ptr = buf;
+        char *ptr = buf + 1;
         while (*ptr)
         {
             if (!isalpha(*ptr))
@@ -195,14 +197,15 @@ bool fsm_spec_read_from(FILE *stream, FSM_Spec *spec)
             fsm_states_add(rules_out[rules_cnt], atoi(seek));
             seek = strtok(NULL, ",");
         }
-        printf("found rule: (%d, %c) -> ",
+        /* printf("found rule: (%d, %c) -> ",
                rules_in[rules_cnt],
                rules_sym[rules_cnt] + 'a');
         for (int i = 0; i < fsm_states_count(rules_out[rules_cnt]); ++i)
             printf("%d ", fsm_states_at(rules_out[rules_cnt], i));
-        printf("\n");
+        printf("\n"); */
         ++rules_cnt;
     }
+    printf("Read %d transition rules\n", rules_cnt);
 
     if (buf_len == -1)
     {
