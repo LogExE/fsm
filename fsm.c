@@ -36,11 +36,7 @@ void fsm_reset(struct FSM *aut)
 void fsm_step(struct FSM *aut, char input)
 {
     struct FSM_States *cur = fsm_states_set_convert(aut->cur_states);
-    for (int i = 0; i < fsm_states_count(cur); ++i)
-    {
-        fsm_state_t state = fsm_states_at(cur, i);
-        fsm_states_set_remove(aut->cur_states, state);
-    }
+    fsm_states_set_reset(aut->cur_states);
     for (int i = 0; i < fsm_states_count(cur); ++i)
     {
         fsm_state_t state = fsm_states_at(cur, i);
