@@ -45,8 +45,9 @@ void fsm_states_set_remove(struct FSM_States_Set *set, fsm_state_t state)
 
 void fsm_states_set_reset(struct FSM_States_Set *set)
 {
+    if (set->capacity > 0)
+        free(set->values);
     set->capacity = 0;
-    free(set->values);
 }
 
 bool fsm_states_set_contains(const struct FSM_States_Set *set, fsm_state_t state)
