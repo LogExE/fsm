@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
-#include "fsm.h"
 #include "mydefs.h"
+#include "fsm.h"
+#include "fsm_array.h"
 
 #define FSM_FILE "input.txt"
 
@@ -15,7 +15,7 @@ int main()
         fprintf(stderr, "File %s doesn't exist!\n", FSM_FILE);
         return 1;
     }
-    FSM_Spec spec;
+    struct FSM_Spec spec;
     bool read = fsm_spec_read_from(file, &spec);
     if (!read)
     {
@@ -29,44 +29,37 @@ int main()
     struct FSM_Array *automata;
 
     char inp[LINE_SIZE];
-    char *input;
     while (1)
     {
         printf("NEXT WORD\n> ");
-        if ((input = fgets(inp, LINE_SIZE, stdin)) == NULL)
+        int read = buf_readline(inp, stdin);
+        if (read == 0)
         {
             printf("<exit>\n");
             break;
         }
+        else if (read == -1)
+        {
+            printf("Stdin error!\n");
+            return 1;
+        }
+        else if (read == -2)
+        {
+            printf("Input is too long!\n");
+            return 1;
+        }
+        printf("Input length: %ld\n", read);
         automata = fsm_array_create();
         fsm_array_add(automata, fsm_create(&spec));
-        inp[strcspn(inp, "\n")] = '\0';
 
-        int failed_count = 0;
-
+        char *input = inp;
         while (*input)
         {
             printf("==================\n");
-            printf("Step %d:\n", input - inp + 1);
+            printf("Step %ld:\n", input - inp + 1);
             printf("Passing character '%c'\n", *input);
-            int aut_count = fsm_array_count(automata);
-            for (int i = 0; i < aut_count; ++i)
-            {
-                struct FSM *aut = fsm_array_at(automata, i);
-                printf("=> Automaton %d, state %d:\n", i, fsm_get_state(aut));
-                struct FSM_Array *new_aut = fsm_step(aut, *input);
-
-                if (new_aut != NULL)
-                {
-                    for (int j = 0; j < fsm_array_count(new_aut); ++j)
-                    {
-                        struct FSM *aut_clone = fsm_array_at(new_aut, j);
-                        fsm_array_add(automata, aut_clone);
-                        printf("Clone: automaton %d, state %d\n", fsm_array_count(automata) - 1, fsm_get_state(aut_clone));
-                    }
-                }
-                printf("State is now %d\n", fsm_get_state(aut));
-            }
+            fsm_array_input(automata, *input);
+            printf("We have %d automata\n", fsm_array_count(automata));
             ++input;
         }
         printf("==================\n");

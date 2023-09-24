@@ -8,6 +8,7 @@ add_executable(fsm
     fsm_states.c
     fsm_spec.c
     fsm_array.c
+    mydefs.c
 )
 
 target_compile_options(fsm PRIVATE -Wall -Wextra -Wpedantic)

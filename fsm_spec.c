@@ -4,9 +4,11 @@
 #include <string.h>
 #include <ctype.h>
 
+#include "mydefs.h"
+
 #define MAX(X, Y) (((X) > (Y)) ? (X) : (Y))
 
-bool fsm_spec_check_is_final(FSM_Spec spec, fsm_state_t state)
+bool fsm_spec_check_is_final(struct FSM_Spec spec, fsm_state_t state)
 {
     for (int i = 0; i < fsm_states_count(spec.fin_states); ++i)
         if (fsm_states_at(spec.fin_states, i) == state)
@@ -14,29 +16,7 @@ bool fsm_spec_check_is_final(FSM_Spec spec, fsm_state_t state)
     return false;
 }
 
-// > 0 - how many chars read
-// == 0 - EOF
-// -1 - stream error
-// -2 - too many chars
-static int buf_readline(char *buf, FILE *stream)
-{
-    char *gets_res = fgets(buf, LINE_SIZE, stream);
-    if (gets_res == NULL)
-    {
-        if (feof(stream))
-            return 0;
-        else
-            return -1;
-    }
-    int buf_len = strlen(buf);
-    if (buf[buf_len - 1] != '\n' && !feof(stream))
-        return -2;
-    if (buf[buf_len - 1] == '\n')
-        buf[buf_len - 1] = '\0';
-    return buf_len;
-}
-
-bool fsm_spec_read_from(FILE *stream, FSM_Spec *spec)
+bool fsm_spec_read_from(FILE *stream, struct FSM_Spec *spec)
 {
     // Заготовочка переменных
     char *fsm_alphabet;
@@ -78,7 +58,7 @@ bool fsm_spec_read_from(FILE *stream, FSM_Spec *spec)
     }
     else
     {
-        char *ptr = buf + 1;
+        char *ptr = buf;
         while (*ptr)
         {
             if (!isalpha(*ptr))
@@ -88,7 +68,7 @@ bool fsm_spec_read_from(FILE *stream, FSM_Spec *spec)
             }
             ++ptr;
         }
-        alph_cnt = ptr - buf + 1;
+        alph_cnt = ptr - buf;
         fsm_alphabet = malloc(alph_cnt + 1);
         memcpy(fsm_alphabet, buf, alph_cnt);
     }
@@ -187,7 +167,7 @@ bool fsm_spec_read_from(FILE *stream, FSM_Spec *spec)
         rules_in[rules_cnt] = strtol(seek, &end, 10);
         seek = end + 1; // пропуск пробела
         // вход
-        rules_sym[rules_cnt] = *seek - 'a';
+        rules_sym[rules_cnt] = *seek;
         ++seek;
         // следующие состояния
         rules_out[rules_cnt] = fsm_states_create();
@@ -199,7 +179,7 @@ bool fsm_spec_read_from(FILE *stream, FSM_Spec *spec)
         }
         /* printf("found rule: (%d, %c) -> ",
                rules_in[rules_cnt],
-               rules_sym[rules_cnt] + 'a');
+               rules_sym[rules_cnt]);
         for (int i = 0; i < fsm_states_count(rules_out[rules_cnt]); ++i)
             printf("%d ", fsm_states_at(rules_out[rules_cnt], i));
         printf("\n"); */
@@ -229,7 +209,7 @@ bool fsm_spec_read_from(FILE *stream, FSM_Spec *spec)
         for (int i = 0; i < FSM_ALPHABET_SIZE; ++i)
             spec->output[state][i] = NULL;
     for (int i = 0; i < rules_cnt; ++i)
-        spec->output[rules_in[i]][rules_sym[i]] = rules_out[i];
+        spec->output[rules_in[i]][rules_sym[i] - 'a'] = rules_out[i];
     return true;
 other_fail:
     free(fsm_alphabet);
@@ -252,7 +232,7 @@ static int int_digits(int x)
     return res;
 }
 
-static int get_max_len(FSM_Spec spec)
+static int get_max_len(struct FSM_Spec spec)
 {
     int res = 0;
     for (int i = 0; i < fsm_states_count(spec.states); ++i)
@@ -276,7 +256,7 @@ static int get_max_len(FSM_Spec spec)
     return res;
 }
 
-void fsm_spec_output(FSM_Spec spec)
+void fsm_spec_output(struct FSM_Spec spec)
 {
     int spaces = get_max_len(spec) + 1;
     printf(OUTPUT_DELIM);

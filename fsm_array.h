@@ -9,3 +9,5 @@ void fsm_array_free(struct FSM_Array *arr);
 void fsm_array_add(struct FSM_Array *arr, struct FSM *aut);
 struct FSM *fsm_array_at(const struct FSM_Array *arr, int idx);
 int fsm_array_count(const struct FSM_Array *arr);
+
+void fsm_array_input(struct FSM_Array *arr, char ch);

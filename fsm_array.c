@@ -47,3 +47,21 @@ int fsm_array_count(const struct FSM_Array *arr)
 {
     return arr->count;
 }
+
+void fsm_array_input(struct FSM_Array *arr, char ch)
+{
+    int aut_count = fsm_array_count(arr);
+    for (int i = 0; i < aut_count; ++i)
+    {
+        struct FSM *aut = fsm_array_at(arr, i);
+        struct FSM_Array *new_aut = fsm_step(aut, ch);
+        if (new_aut != NULL)
+        {
+            for (int j = 0; j < fsm_array_count(new_aut); ++j)
+            {
+                struct FSM *aut_clone = fsm_array_at(new_aut, j);
+                fsm_array_add(arr, aut_clone);
+            }
+        }
+    }
+}

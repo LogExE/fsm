@@ -3,15 +3,17 @@
 #include <stdlib.h>
 #include <ctype.h>
 
+#include "fsm_array.h"
+
 struct FSM
 {
-    FSM_Spec *spec;
+    struct FSM_Spec *spec;
 
-    FSM_Output output;
+    enum FSM_Output output;
     int cur_state;
 };
 
-struct FSM *fsm_create(FSM_Spec *spec)
+struct FSM *fsm_create(struct FSM_Spec *spec)
 {
     struct FSM *ret = malloc(sizeof(struct FSM));
     ret->spec = spec;
@@ -26,7 +28,7 @@ void fsm_free(struct FSM *aut)
 
 static struct FSM_States *get_out_states(const struct FSM *aut, char input)
 {
-    return aut->spec->output[aut->cur_state][input];
+    return aut->spec->output[aut->cur_state][input - 'a'];
 }
 
 void fsm_reset(struct FSM *aut)
@@ -48,7 +50,7 @@ struct FSM_Array *fsm_step(struct FSM *aut, char input)
 {
     if (aut->output == FSM_FAILED || !isalpha(input))
         return NULL;
-    struct FSM_States *new_states = get_out_states(aut, input - 'a');
+    struct FSM_States *new_states = get_out_states(aut, input);
     if (new_states == NULL)
     {
         aut->output = FSM_FAILED;
@@ -75,7 +77,7 @@ fsm_state_t fsm_get_state(const struct FSM *aut)
     return aut->cur_state;
 }
 
-FSM_Output fsm_get_output(const struct FSM *aut)
+enum FSM_Output fsm_get_output(const struct FSM *aut)
 {
     return aut->output;
 }
