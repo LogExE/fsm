@@ -3,77 +3,68 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-#include "fsm_array.h"
-
-#define FSM_STATE_FAILED 0
+#include "fsm_states_set.h"
 
 struct FSM
 {
     struct FSM_Spec *spec;
 
-    int cur_state;
+    struct FSM_States_Set *cur_states;
 };
 
 struct FSM *fsm_create(struct FSM_Spec *spec)
 {
     struct FSM *ret = malloc(sizeof(struct FSM));
     ret->spec = spec;
-    fsm_reset(ret);
+    ret->cur_states = fsm_states_set_create();
+    fsm_states_set_add(ret->cur_states, spec->init_state);
     return ret;
 }
 
 void fsm_free(struct FSM *aut)
 {
+    fsm_states_set_free(aut->cur_states);
     free(aut);
-}
-
-static struct FSM_States *get_out_states(const struct FSM *aut, char input)
-{
-    return aut->spec->output[aut->cur_state][input - 'a'];
 }
 
 void fsm_reset(struct FSM *aut)
 {
-    aut->cur_state = aut->spec->init_state;
+    fsm_states_set_reset(aut->cur_states);
+    fsm_states_set_add(aut->cur_states, aut->spec->init_state);
 }
 
-struct FSM_Array *fsm_step(struct FSM *aut, char input)
+void fsm_step(struct FSM *aut, char input)
 {
-    if (aut->cur_state == FSM_STATE_FAILED || !isalpha(input))
-        return NULL;
-    struct FSM_States *new_states = get_out_states(aut, input);
-    if (new_states == NULL)
+    struct FSM_States *cur = fsm_states_set_convert(aut->cur_states);
+    for (int i = 0; i < fsm_states_count(cur); ++i)
     {
-        aut->cur_state = FSM_STATE_FAILED;
-        return NULL;
+        fsm_state_t state = fsm_states_at(cur, i);
+        struct FSM_States *to = aut->spec->output[state][input - 'a'];
+        fsm_states_set_remove(aut->cur_states, state);
+        for (int j = 0; j < fsm_states_count(to); ++j)
+            fsm_states_set_add(aut->cur_states, fsm_states_at(to, j));
     }
-    aut->cur_state = fsm_states_at(new_states, 0);
-
-    if (fsm_states_count(new_states) == 1)
-        return NULL;
-
-    struct FSM_Array *new_auts = fsm_array_create();
-    for (int i = 1; i < fsm_states_count(new_states); ++i)
-    {
-        fsm_state_t new_state = fsm_states_at(new_states, i);
-        struct FSM *new_aut = fsm_create(aut->spec);
-        aut->cur_state = new_state;
-        fsm_array_add(new_auts, new_aut);
-    }
-    return new_auts;
+    fsm_states_free(cur);
 }
 
-fsm_state_t fsm_get_state(const struct FSM *aut)
+struct FSM_States_Set *fsm_get_states(const struct FSM *aut)
 {
-    return aut->cur_state;
+    return aut->cur_states;
 }
 
 enum FSM_Output fsm_get_output(const struct FSM *aut)
 {
-    if (aut->cur_state == FSM_STATE_FAILED)
-        return FSM_FAILED;
-    else if (fsm_spec_check_is_final(*aut->spec, aut->cur_state))
-        return FSM_RECOGNIZED;
-    else
-        return FSM_NEXT;
+    for (int i = 0; i < fsm_states_count(aut->spec->fin_states); ++i)
+    {
+        fsm_state_t fin_state = fsm_states_at(aut->spec->fin_states, i);
+        if (fsm_states_set_contains(aut->cur_states, fin_state))
+            return FSM_RECOGNIZED;
+    }
+    for (int i = 0; i < fsm_states_count(aut->spec->states); ++i)
+    {
+        fsm_state_t state = fsm_states_at(aut->spec->states, i);
+        if (fsm_states_set_contains(aut->cur_states, state))
+            return FSM_NEXT;
+    }
+    return FSM_FAILED;
 }

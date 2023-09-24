@@ -6,8 +6,8 @@ add_executable(fsm
     main.c
     fsm.c
     fsm_states.c
+    fsm_states_set.c
     fsm_spec.c
-    fsm_array.c
     mydefs.c
 )
 

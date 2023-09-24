@@ -3,7 +3,7 @@
 
 #include "mydefs.h"
 #include "fsm.h"
-#include "fsm_array.h"
+#include "fsm_states_set.h"
 
 #define FSM_FILE "input.txt"
 
@@ -26,7 +26,7 @@ int main()
 
     printf("Read automaton:\n");
     fsm_spec_output(spec);
-    struct FSM_Array *automata;
+    struct FSM *aut = fsm_create(&spec);
 
     char inp[LINE_SIZE];
     while (1)
@@ -48,9 +48,7 @@ int main()
             printf("Input is too long!\n");
             return 1;
         }
-        printf("Input length: %ld\n", read);
-        automata = fsm_array_create();
-        fsm_array_add(automata, fsm_create(&spec));
+        printf("Input length: %d\n", read);
 
         char *input = inp;
         while (*input)
@@ -58,24 +56,25 @@ int main()
             printf("==================\n");
             printf("Step %ld:\n", input - inp + 1);
             printf("Passing character '%c'\n", *input);
-            fsm_array_input(automata, *input);
-            printf("We have %d automata\n", fsm_array_count(automata));
+            fsm_step(aut, *input);
+            struct FSM_States_Set *states = fsm_get_states(aut);
+            struct FSM_States *states_out = fsm_states_set_convert(states);
+            printf("At states: ");
+            for (int i = 0; i < fsm_states_count(states_out); ++i)
+                printf("%d ", fsm_states_at(states_out, i));
+            printf("\n");
+            fsm_states_free(states_out);
             ++input;
         }
         printf("==================\n");
         printf("Result: ");
-        for (int i = 0; i < fsm_array_count(automata); ++i)
-        {
-            struct FSM *aut = fsm_array_at(automata, i);
-            if (fsm_get_output(aut) == FSM_RECOGNIZED)
-            {
-                printf("%sWord has been recognized!\n%s", ANSI_GREEN, ANSI_RESET);
-                goto next;
-            }
-        }
-        printf("%sWord has not been recognized!\n%s", ANSI_RED, ANSI_RESET);
-    next:
-        fsm_array_free(automata);
+        if (fsm_get_output(aut) == FSM_RECOGNIZED)
+            printf("%sWord has been recognized!\n%s", ANSI_GREEN, ANSI_RESET);
+        else
+            printf("%sWord has not been recognized!\n%s", ANSI_RED, ANSI_RESET);
+
+        fsm_reset(aut);
+        printf("Automaton has been reset.\n");
     }
     free(spec.alphabet);
     fsm_states_free(spec.states);
