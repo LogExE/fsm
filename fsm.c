@@ -40,6 +40,10 @@ void fsm_step(struct FSM *aut, char input)
     {
         fsm_state_t state = fsm_states_at(cur, i);
         fsm_states_set_remove(aut->cur_states, state);
+    }
+    for (int i = 0; i < fsm_states_count(cur); ++i)
+    {
+        fsm_state_t state = fsm_states_at(cur, i);
         struct FSM_States *to = aut->spec->output[state][input - 'a'];
         if (to == NULL)
             continue;
