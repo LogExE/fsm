@@ -5,11 +5,12 @@
 
 #include "fsm_array.h"
 
+#define FSM_STATE_FAILED 0
+
 struct FSM
 {
     struct FSM_Spec *spec;
 
-    enum FSM_Output output;
     int cur_state;
 };
 
@@ -34,29 +35,19 @@ static struct FSM_States *get_out_states(const struct FSM *aut, char input)
 void fsm_reset(struct FSM *aut)
 {
     aut->cur_state = aut->spec->init_state;
-    aut->output = fsm_spec_check_is_final(*aut->spec, aut->cur_state) ? FSM_RECOGNIZED : FSM_NEXT;
-}
-
-static void fsm_change(struct FSM *aut, fsm_state_t new_state)
-{
-    aut->cur_state = new_state;
-    if (fsm_spec_check_is_final(*aut->spec, aut->cur_state))
-        aut->output = FSM_RECOGNIZED;
-    else
-        aut->output = FSM_NEXT;
 }
 
 struct FSM_Array *fsm_step(struct FSM *aut, char input)
 {
-    if (aut->output == FSM_FAILED || !isalpha(input))
+    if (aut->cur_state == FSM_STATE_FAILED || !isalpha(input))
         return NULL;
     struct FSM_States *new_states = get_out_states(aut, input);
     if (new_states == NULL)
     {
-        aut->output = FSM_FAILED;
+        aut->cur_state = FSM_STATE_FAILED;
         return NULL;
     }
-    fsm_change(aut, fsm_states_at(new_states, 0));
+    aut->cur_state = fsm_states_at(new_states, 0);
 
     if (fsm_states_count(new_states) == 1)
         return NULL;
@@ -66,7 +57,7 @@ struct FSM_Array *fsm_step(struct FSM *aut, char input)
     {
         fsm_state_t new_state = fsm_states_at(new_states, i);
         struct FSM *new_aut = fsm_create(aut->spec);
-        fsm_change(new_aut, new_state);
+        aut->cur_state = new_state;
         fsm_array_add(new_auts, new_aut);
     }
     return new_auts;
@@ -79,5 +70,10 @@ fsm_state_t fsm_get_state(const struct FSM *aut)
 
 enum FSM_Output fsm_get_output(const struct FSM *aut)
 {
-    return aut->output;
+    if (aut->cur_state == FSM_STATE_FAILED)
+        return FSM_FAILED;
+    else if (fsm_spec_check_is_final(*aut->spec, aut->cur_state))
+        return FSM_RECOGNIZED;
+    else
+        return FSM_NEXT;
 }
