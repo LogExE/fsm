@@ -11,3 +11,5 @@ add_executable(fsm
 )
 
 target_compile_options(fsm PRIVATE -Wall -Wextra -Wpedantic)
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/input.txt ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
