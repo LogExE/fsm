@@ -39,8 +39,10 @@ void fsm_step(struct FSM *aut, char input)
     for (int i = 0; i < fsm_states_count(cur); ++i)
     {
         fsm_state_t state = fsm_states_at(cur, i);
-        struct FSM_States *to = aut->spec->output[state][input - 'a'];
         fsm_states_set_remove(aut->cur_states, state);
+        struct FSM_States *to = aut->spec->output[state][input - 'a'];
+        if (to == NULL)
+            continue;
         for (int j = 0; j < fsm_states_count(to); ++j)
             fsm_states_set_add(aut->cur_states, fsm_states_at(to, j));
     }

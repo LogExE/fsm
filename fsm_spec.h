@@ -18,7 +18,7 @@ struct FSM_Spec
     int init_state;
 
     struct FSM_States *output[FSM_MAX_STATE_NUM][FSM_ALPHABET_SIZE];
-} ;
+};
 
 bool fsm_spec_check_is_final(struct FSM_Spec spec, fsm_state_t state);
 
