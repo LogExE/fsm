@@ -4,13 +4,14 @@ project("fsm")
 
 add_executable(fsm
     main.c
-    fsm.c
-    fsm_states.c
-    fsm_states_set.c
-    fsm_spec.c
-    mydefs.c
 )
 
+add_subdirectory(fsmlib)
+target_link_libraries(fsm PUBLIC fsmlib)
+add_subdirectory(bufreadline)
+target_link_libraries(fsm PUBLIC bufreadline)
+
+include_directories(fsmlib bufreadline)
 target_compile_options(fsm PRIVATE -Wall -Wextra -Wpedantic)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/input.txt ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)

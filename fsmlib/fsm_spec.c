@@ -4,7 +4,7 @@
 #include <string.h>
 #include <ctype.h>
 
-#include "mydefs.h"
+#include "bufreadline.h"
 
 #define MAX(X, Y) (((X) > (Y)) ? (X) : (Y))
 
