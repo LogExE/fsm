@@ -32,7 +32,7 @@ void nda_reset(struct NDA *aut)
 
 void nda_step(struct NDA *aut, char input)
 {
-    struct NDA_States *next = nda_states_step(aut->cur_states, *aut->spec, input);
+    struct FSM_States *next = nda_states_step(aut->cur_states, *aut->spec, input);
     fsm_states_free(aut->cur_states);
     aut->cur_states = next;
 }

@@ -10,6 +10,14 @@ add_executable(to_dfsm
     to_dfsm.c
 )
 
+set(FSM "KDA" CACHE STRING "Type of automata to simulate")
+
+if (FSM STREQUAL "KDA")
+    target_compile_definitions(fsm PRIVATE "TYPE_KDA")
+else()
+    target_compile_definitions(fsm PRIVATE "TYPE_NDA")
+endif()
+
 add_subdirectory(fsmlib)
 add_subdirectory(bufreadline)
 
