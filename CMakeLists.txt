@@ -6,6 +6,10 @@ add_executable(fsm
     main.c
 )
 
+add_executable(ndfsm_to_dfsm
+    ndfsm_to_dfsm.c
+)
+
 add_subdirectory(fsmlib)
 target_link_libraries(fsm PUBLIC fsmlib)
 add_subdirectory(bufreadline)

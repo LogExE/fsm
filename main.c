@@ -12,7 +12,7 @@
 #define ANSI_YELLOW "\033[0;33m"
 #define ANSI_RESET "\033[0m"
 
-int main()
+int main(void)
 {
     FILE *file = fopen(FSM_FILE, "r");
     if (file == NULL)
