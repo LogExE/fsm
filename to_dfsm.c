@@ -2,6 +2,7 @@
 #include "stdlib.h"
 
 #include "fsm_spec.h"
+#include "nda.h"
 
 void convert_write(struct FSM_Spec spec, FILE *file)
 {
@@ -16,7 +17,7 @@ void convert_write(struct FSM_Spec spec, FILE *file)
         for (char *alpha = spec.alphabet; *alpha != '\0'; ++alpha)
         {
             int idx = *alpha - 'a';
-            new_rules[i][idx] = fsm_states_step(new_states_col[i], spec, *alpha);
+            new_rules[i][idx] = nda_states_step(new_states_col[i], spec, *alpha);
             for (int j = 0; j < table_size; ++j)
                 if (fsm_states_alike(new_rules[i][idx], new_states_col[j]))
                     goto found;

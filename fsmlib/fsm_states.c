@@ -104,22 +104,3 @@ bool fsm_states_alike(const struct FSM_States *states1, const struct FSM_States 
 {
     return fsm_states_subset(states1, states2) && fsm_states_subset(states2, states1);
 }
-
-struct FSM_States *fsm_states_step(const struct FSM_States *states, const struct FSM_Spec spec, char input)
-{
-    struct FSM_States *stepped = fsm_states_create();
-    for (int i = 0; i < fsm_states_count(states); ++i)
-    {
-        fsm_state_t state = fsm_states_at(states, i);
-        struct FSM_States *to = spec.output[state][input - 'a'];
-        if (to == NULL)
-            continue;
-        for (int j = 0; j < fsm_states_count(to); ++j)
-        {
-            fsm_state_t value = fsm_states_at(to, j);
-            if (!fsm_states_contains(stepped, value))
-                fsm_states_add(stepped, value);
-        }
-    }
-    return stepped;
-}

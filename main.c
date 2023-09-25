@@ -2,7 +2,8 @@
 #include <stdlib.h>
 
 #include "bufreadline.h"
-#include "fsm.h"
+#include "nda.h"
+#include "kda.h"
 
 #define FSM_FILE "input.txt"
 
@@ -30,7 +31,7 @@ int main(void)
 
     printf("Read automaton:\n");
     fsm_spec_output(spec);
-    struct FSM *aut = fsm_create(&spec);
+    struct NDA *aut = nda_create(&spec);
 
     char inp[LINE_SIZE];
     while (1)
@@ -60,8 +61,8 @@ int main(void)
             printf("==================\n");
             printf("Step %ld:\n", input - inp + 1);
             printf("Passing character '%c'\n", *input);
-            fsm_step(aut, *input);
-            struct FSM_States *states_out = fsm_get_states(aut);
+            nda_step(aut, *input);
+            struct FSM_States *states_out = nda_get_states(aut);
             printf("At states: ");
             for (int i = 0; i < fsm_states_count(states_out); ++i)
                 printf("%d ", fsm_states_at(states_out, i));
@@ -70,12 +71,12 @@ int main(void)
         }
         printf("==================\n");
         printf("Result: ");
-        if (fsm_get_output(aut) == FSM_RECOGNIZED)
+        if (nda_recognized(aut))
             printf("%sWord has been recognized!\n%s", ANSI_GREEN, ANSI_RESET);
         else
             printf("%sWord has not been recognized!\n%s", ANSI_RED, ANSI_RESET);
 
-        fsm_reset(aut);
+        nda_reset(aut);
         printf("Automaton has been reset.\n");
     }
     free(spec.alphabet);

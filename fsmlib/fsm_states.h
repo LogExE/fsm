@@ -23,5 +23,3 @@ int fsm_states_count(const struct FSM_States *states);
 bool fsm_states_contains(const struct FSM_States *states, fsm_state_t state);
 bool fsm_states_subset(const struct FSM_States *states1, const struct FSM_States *states2);
 bool fsm_states_alike(const struct FSM_States *states1, const struct FSM_States *states2);
-
-struct FSM_States *fsm_states_step(const struct FSM_States *states, const struct FSM_Spec spec, char input);
