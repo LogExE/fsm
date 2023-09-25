@@ -59,7 +59,7 @@ void fsm_states_remove(struct FSM_States *arr, int idx)
 void fsm_states_purge(struct FSM_States *arr, fsm_state_t state)
 {
     for (int i = 0; arr->count;)
-        if (arr->values[i] == state)
+        if (fsm_states_at(arr, i) == state)
             fsm_states_remove(arr, i);
         else
             ++i;
@@ -87,9 +87,22 @@ int fsm_states_count(const struct FSM_States *states)
 bool fsm_states_contains(const struct FSM_States *states, fsm_state_t state)
 {
     for (int i = 0; i < states->count; ++i)
-        if (states->values[i] == state)
+        if (fsm_states_at(states, i) == state)
             return true;
     return false;
+}
+
+bool fsm_states_subset(const struct FSM_States *states1, const struct FSM_States *states2)
+{
+    for (int i = 0; i < states1->count; ++i)
+        if (!fsm_states_contains(states2, fsm_states_at(states1, i)))
+            return false;
+    return true;
+}
+
+bool fsm_states_alike(const struct FSM_States *states1, const struct FSM_States *states2)
+{
+    return fsm_states_subset(states1, states2) && fsm_states_subset(states2, states1);
 }
 
 struct FSM_States *fsm_states_step(const struct FSM_States *states, const struct FSM_Spec spec, char input)

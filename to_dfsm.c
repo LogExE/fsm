@@ -7,15 +7,44 @@ void convert_write(struct FSM_Spec spec, FILE *file)
 {
     fprintf(file, "%s\n", spec.alphabet);
     struct FSM_States *new_states_col[FSM_MAX_STATE_NUM];
-    struct FSM_States *new_rules[FSM_MAX_STATE_NUM][FSM_ALPHABET_SIZE];
     new_states_col[0] = fsm_states_create();
     fsm_states_add(new_states_col[0], spec.init_state);
+    struct FSM_States *new_rules[FSM_MAX_STATE_NUM][FSM_ALPHABET_SIZE];
+    struct FSM_States *fin_states = fsm_states_create();
     int table_size = 1;
     for (int i = 0; i < table_size; ++i)
         for (char *alpha = spec.alphabet; *alpha != '\0'; ++alpha)
         {
-            int j = *alpha - 'a';
-            new_rules[i][j] = spec.output[i][j];
+            int idx = *alpha - 'a';
+            new_rules[i][idx] = fsm_states_step(new_states_col[i], spec, *alpha);
+            for (int j = 0; j < table_size; ++j)
+                if (fsm_states_alike(new_rules[i][idx], new_states_col[j]))
+                    goto found;
+            new_states_col[table_size] = new_rules[i][idx];
+            ++table_size;
+        found:
+        }
+    // Нумеруем новые состояния
+    for (int i = 1; i <= table_size; ++i)
+        fprintf(file, "%d ", i);
+    fprintf(file, "\n");
+    // Новые конечные состояния
+    for (int i = 0; i < table_size; ++i)
+        for (int j = 0; j < fsm_states_count(spec.fin_states); ++j)
+            if (fsm_states_contains(new_states_col[i], fsm_states_at(spec.fin_states, j)))
+                fprintf(file, "%d ", i + 1);
+    fprintf(file, "\n");
+    // Новое начальное состояние - всегда 1
+    fprintf(file, "1\n");
+    // Новые правила перехода
+    for (int i = 0; i < table_size; ++i)
+        for (char *alpha = spec.alphabet; *alpha != '\0'; ++alpha)
+        {
+            int idx = *alpha - 'a';
+            int j = 0;
+            while (!fsm_states_alike(new_states_col[j], new_rules[i][idx]))
+                ++j;
+            fprintf(file, "%d %c %d\n", i + 1, *alpha, j + 1);
         }
 }
 
