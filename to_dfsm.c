@@ -24,6 +24,19 @@ void convert_write(struct FSM_Spec spec, FILE *file)
             ++table_size;
         found:
         }
+    printf("New states:\n");
+    for (int i = 0; i < table_size; ++i)
+    {
+        printf("%d: {", i + 1);
+        int cnt = fsm_states_count(new_states_col[i]);
+        for (int j = 0; j < cnt; ++j)
+        {
+            printf("%d", fsm_states_at(new_states_col[i], j));
+            if (j < cnt - 1)
+                printf(", ");
+        }
+        printf("}\n");
+    }
     // Нумеруем новые состояния
     for (int i = 1; i <= table_size; ++i)
         fprintf(file, "%d ", i);
