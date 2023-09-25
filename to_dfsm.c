@@ -6,7 +6,17 @@
 void convert_write(struct FSM_Spec spec, FILE *file)
 {
     fprintf(file, "%s\n", spec.alphabet);
-    
+    struct FSM_States *new_states_col[FSM_MAX_STATE_NUM];
+    struct FSM_States *new_rules[FSM_MAX_STATE_NUM][FSM_ALPHABET_SIZE];
+    new_states_col[0] = fsm_states_create();
+    fsm_states_add(new_states_col[0], spec.init_state);
+    int table_size = 1;
+    for (int i = 0; i < table_size; ++i)
+        for (char *alpha = spec.alphabet; *alpha != '\0'; ++alpha)
+        {
+            int j = *alpha - 'a';
+            new_rules[i][j] = spec.output[i][j];
+        }
 }
 
 int main(int argc, char **argv)

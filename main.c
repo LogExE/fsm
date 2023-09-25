@@ -3,7 +3,6 @@
 
 #include "bufreadline.h"
 #include "fsm.h"
-#include "fsm_states_set.h"
 
 #define FSM_FILE "input.txt"
 
@@ -62,13 +61,11 @@ int main(void)
             printf("Step %ld:\n", input - inp + 1);
             printf("Passing character '%c'\n", *input);
             fsm_step(aut, *input);
-            struct FSM_States_Set *states = fsm_get_states(aut);
-            struct FSM_States *states_out = fsm_states_set_convert(states);
+            struct FSM_States *states_out = fsm_get_states(aut);
             printf("At states: ");
             for (int i = 0; i < fsm_states_count(states_out); ++i)
                 printf("%d ", fsm_states_at(states_out, i));
             printf("\n");
-            fsm_states_free(states_out);
             ++input;
         }
         printf("==================\n");

@@ -5,7 +5,6 @@ project("fsmlib")
 add_library(fsmlib
     fsm.c
     fsm_states.c
-    fsm_states_set.c
     fsm_spec.c
 )
 
