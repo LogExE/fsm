@@ -13,5 +13,5 @@ void kda_free(struct KDA *aut);
 void kda_reset(struct KDA *aut);
 void kda_step(struct KDA *aut, char input);
 
-fsm_state_t nda_get_state(const struct KDA *aut);
+fsm_state_t kda_get_state(const struct KDA *aut);
 bool kda_recognized(const struct KDA *aut);

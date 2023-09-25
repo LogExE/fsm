@@ -15,8 +15,11 @@ struct KDA *kda_create(struct FSM_Spec *spec)
 {
     for (int i = 0; i < fsm_states_count(spec->states); ++i)
         for (char *alpha = spec->alphabet; *alpha != '\0'; ++alpha)
-            if (fsm_states_count(spec->output[i][*alpha - 'a']) > 1)
+        {
+            struct FSM_States *next = spec->output[i][*alpha - 'a'];
+            if (next != NULL && fsm_states_count(next) > 1)
                 return NULL;
+        }
     struct KDA *ret = malloc(sizeof(struct KDA));
     ret->spec = spec;
     ret->cur_state = spec->init_state;

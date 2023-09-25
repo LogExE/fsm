@@ -29,9 +29,14 @@ int main(void)
     }
     fclose(file);
 
-    printf("Read automaton:\n");
+    printf("Read spec:\n");
     fsm_spec_output(spec);
-    struct NDA *aut = nda_create(&spec);
+    struct KDA *aut = kda_create(&spec);
+    if (aut == NULL)
+    {
+        fprintf(stderr, "This automata specification can't be used to create KDA!\n");
+        return 1;
+    }
 
     char inp[LINE_SIZE];
     while (1)
@@ -61,22 +66,18 @@ int main(void)
             printf("==================\n");
             printf("Step %ld:\n", input - inp + 1);
             printf("Passing character '%c'\n", *input);
-            nda_step(aut, *input);
-            struct FSM_States *states_out = nda_get_states(aut);
-            printf("At states: ");
-            for (int i = 0; i < fsm_states_count(states_out); ++i)
-                printf("%d ", fsm_states_at(states_out, i));
-            printf("\n");
+            kda_step(aut, *input);
+            printf("At state: %d\n", kda_get_state(aut));
             ++input;
         }
         printf("==================\n");
         printf("Result: ");
-        if (nda_recognized(aut))
+        if (kda_recognized(aut))
             printf("%sWord has been recognized!\n%s", ANSI_GREEN, ANSI_RESET);
         else
             printf("%sWord has not been recognized!\n%s", ANSI_RED, ANSI_RESET);
 
-        nda_reset(aut);
+        kda_reset(aut);
         printf("Automaton has been reset.\n");
     }
     free(spec.alphabet);
