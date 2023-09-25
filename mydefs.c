@@ -8,13 +8,13 @@ int buf_readline(char *buf, FILE *stream)
     if (gets_res == NULL)
     {
         if (feof(stream))
-            return 0;
+            return BUF_RL_EOF;
         else
-            return -1;
+            return BUF_RL_ERR;
     }
     int read = strlen(buf);
     if (buf[read - 1] != '\n' && !feof(stream))
-        return -2;
+        return BUF_RL_TOOMANY;
     if (buf[read - 1] == '\n')
     {
         buf[read - 1] = '\0';

@@ -33,17 +33,17 @@ int main()
     {
         printf("NEXT WORD\n> ");
         int read = buf_readline(inp, stdin);
-        if (read == 0)
+        if (read == BUF_RL_EOF)
         {
             printf("<exit>\n");
             break;
         }
-        else if (read == -1)
+        else if (read == BUF_RL_ERR)
         {
             printf("Stdin error!\n");
             return 1;
         }
-        else if (read == -2)
+        else if (read == BUF_RL_TOOMANY)
         {
             printf("Input is too long!\n");
             return 1;

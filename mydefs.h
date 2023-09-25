@@ -8,8 +8,11 @@
 #define ANSI_RESET "\033[0m"
 
 #define LINE_SIZE 512
-// > 0 - how many chars read except newline
-// == 0 - EOF
-// -1 - stream error
-// -2 - too many chars
+#define BUF_RL_ERR -1
+#define BUF_RL_TOOMANY -2
+#define BUF_RL_EOF -3
+// >= 0 - how many chars read except newline
+// BUF_RL_ERR - stream error
+// BUF_RL_TOOMANY - too many chars
+// BUF_RL_EOF - EOF
 int buf_readline(char *buf, FILE *stream);

@@ -32,15 +32,23 @@ bool fsm_spec_read_from(FILE *stream, struct FSM_Spec *spec)
     int buf_len;
 
     // Читаем алфавит
-    buf_len = buf_readline(buf, stream);
-    if (buf_len == -1)
+    do
+    {
+        buf_len = buf_readline(buf, stream);
+    } while (buf_len == 0);
+    if (buf_len == BUF_RL_ERR)
     {
         fprintf(stderr, "Error while reading alphabet!\n");
         goto alpha_fail;
     }
-    else if (buf_len == -2)
+    else if (buf_len == BUF_RL_TOOMANY)
     {
         fprintf(stderr, "Alphabet line was too long!\n");
+        goto alpha_fail;
+    }
+    else if (buf_len == BUF_RL_EOF)
+    {
+        fprintf(stderr, "Alphabet line was EOF!\n");
         goto alpha_fail;
     }
 
@@ -76,15 +84,23 @@ bool fsm_spec_read_from(FILE *stream, struct FSM_Spec *spec)
     printf("Alphabet: \"%s\", size %d\n", fsm_alphabet, alph_cnt);
 
     // Читаем возможные состояния автомата
-    buf_len = buf_readline(buf, stream);
-    if (buf_len == -1)
+    do
+    {
+        buf_len = buf_readline(buf, stream);
+    } while (buf_len == 0);
+    if (buf_len == BUF_RL_ERR)
     {
         fprintf(stderr, "Error while reading states!\n");
         goto other_fail;
     }
-    else if (buf_len == -2)
+    else if (buf_len == BUF_RL_TOOMANY)
     {
         fprintf(stderr, "States line was too long!\n");
+        goto other_fail;
+    }
+    else if (buf_len == BUF_RL_EOF)
+    {
+        fprintf(stderr, "States line was EOF!\n");
         goto other_fail;
     }
 
@@ -110,15 +126,23 @@ bool fsm_spec_read_from(FILE *stream, struct FSM_Spec *spec)
     printf("total states found: %d\n", fsm_states_count(fsm_states));
 
     // Читаем финальные состояния
-    buf_len = buf_readline(buf, stream);
-    if (buf_len == -1)
+    do
+    {
+        buf_len = buf_readline(buf, stream);
+    } while (buf_len == 0);
+    if (buf_len == BUF_RL_ERR)
     {
         fprintf(stderr, "Error while reading final states!\n");
         goto other_fail;
     }
-    else if (buf_len == -2)
+    else if (buf_len == BUF_RL_TOOMANY)
     {
         fprintf(stderr, "Final states line was too long!\n");
+        goto other_fail;
+    }
+    else if (buf_len == BUF_RL_EOF)
+    {
+        fprintf(stderr, "Final states line was EOF!\n");
         goto other_fail;
     }
 
@@ -137,15 +161,23 @@ bool fsm_spec_read_from(FILE *stream, struct FSM_Spec *spec)
     printf("total final states found:  %d\n", fsm_states_count(fsm_fin_states));
 
     // Читаем начальное состояние
-    buf_len = buf_readline(buf, stream);
-    if (buf_len == -1)
+    do
+    {
+        buf_len = buf_readline(buf, stream);
+    } while (buf_len == 0);
+    if (buf_len == BUF_RL_ERR)
     {
         fprintf(stderr, "Error while reading initial state!\n");
         goto other_fail;
     }
-    else if (buf_len == -2)
+    else if (buf_len == BUF_RL_TOOMANY)
     {
         fprintf(stderr, "Initial state line was too long!\n");
+        goto other_fail;
+    }
+    else if (buf_len == BUF_RL_EOF)
+    {
+        fprintf(stderr, "Initial state line was EOF!\n");
         goto other_fail;
     }
 
@@ -159,8 +191,10 @@ bool fsm_spec_read_from(FILE *stream, struct FSM_Spec *spec)
 
     // До конца файла ищем правила переходов
 
-    while ((buf_len = buf_readline(buf, stream)) > 0)
+    while ((buf_len = buf_readline(buf, stream)) >= 0)
     {
+        if (buf_len == 0)
+            continue;
         char *seek = buf;
         char *end = NULL;
         // состояние до
@@ -187,12 +221,12 @@ bool fsm_spec_read_from(FILE *stream, struct FSM_Spec *spec)
     }
     printf("Read %d transition rules\n", rules_cnt);
 
-    if (buf_len == -1)
+    if (buf_len == BUF_RL_ERR)
     {
         fprintf(stderr, "Error while reading rule!\n");
         goto other_fail;
     }
-    else if (buf_len == -2)
+    else if (buf_len == BUF_RL_TOOMANY)
     {
         fprintf(stderr, "Rule line was too long!\n");
         goto other_fail;
