@@ -1,9 +1,11 @@
 #include "stdio.h"
+#include "stdlib.h"
 
 #include "fsm_spec.h"
 
 void convert_write(struct FSM_Spec spec, FILE *file)
 {
+    fprintf(file, "%s\n", spec.alphabet);
     
 }
 
@@ -26,5 +28,8 @@ int main(int argc, char **argv)
     FILE *file_out = fopen(argv[2], "w");
     convert_write(spec, file_out);
     fclose(file_out);
+    free(spec.alphabet);
+    fsm_states_free(spec.states);
+    fsm_states_free(spec.fin_states);
     return 0;
 }
