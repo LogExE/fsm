@@ -11,9 +11,10 @@ add_executable(ndfsm_to_dfsm
 )
 
 add_subdirectory(fsmlib)
-target_link_libraries(fsm PUBLIC fsmlib)
 add_subdirectory(bufreadline)
-target_link_libraries(fsm PUBLIC bufreadline)
+
+target_link_libraries(fsm PUBLIC fsmlib)
+target_link_libraries(ndfsm_to_dfsm PUBLIC fsmlib)
 
 include_directories(fsmlib bufreadline)
 target_compile_options(fsm PRIVATE -Wall -Wextra -Wpedantic)
