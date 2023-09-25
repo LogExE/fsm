@@ -7,6 +7,7 @@
 typedef int fsm_state_t;
 
 struct FSM_States;
+struct FSM_Spec;
 
 struct FSM_States *fsm_states_create();
 void fsm_states_free(struct FSM_States *states);
@@ -20,3 +21,5 @@ void fsm_states_reset(struct FSM_States *arr);
 fsm_state_t fsm_states_at(const struct FSM_States *states, int i);
 int fsm_states_count(const struct FSM_States *states);
 bool fsm_states_contains(const struct FSM_States *states, fsm_state_t state);
+
+struct FSM_States *fsm_states_step(const struct FSM_States *states, const struct FSM_Spec spec, char input);

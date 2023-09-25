@@ -33,22 +33,9 @@ void fsm_reset(struct FSM *aut)
 
 void fsm_step(struct FSM *aut, char input)
 {
-    struct FSM_States *cur = fsm_states_copy(aut->cur_states);
-    fsm_states_reset(aut->cur_states);
-    for (int i = 0; i < fsm_states_count(cur); ++i)
-    {
-        fsm_state_t state = fsm_states_at(cur, i);
-        struct FSM_States *to = aut->spec->output[state][input - 'a'];
-        if (to == NULL)
-            continue;
-        for (int j = 0; j < fsm_states_count(to); ++j)
-        {
-            fsm_state_t value = fsm_states_at(to, j);
-            if (!fsm_states_contains(aut->cur_states, value))
-                fsm_states_add(aut->cur_states, value);
-        }
-    }
-    fsm_states_free(cur);
+    struct FSM_States *next = fsm_states_step(aut->cur_states, *aut->spec, input);
+    fsm_states_free(aut->cur_states);
+    aut->cur_states = next;
 }
 
 struct FSM_States *fsm_get_states(const struct FSM *aut)
