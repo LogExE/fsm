@@ -37,15 +37,13 @@ void nda_step(struct NDA *aut, char input)
     aut->cur_states = next;
 }
 
-struct FSM_States *nda_states_step(const struct FSM_States *states, const struct FSM_Spec spec, char input)
+struct FSM_States *nda_states_step(const struct FSM_States *states, struct FSM_Spec spec, char input)
 {
     struct FSM_States *stepped = fsm_states_create();
     for (int i = 0; i < fsm_states_count(states); ++i)
     {
         fsm_state_t state = fsm_states_at(states, i);
         struct FSM_States *to = spec.output[state][input - 'a'];
-        if (to == NULL)
-            continue;
         for (int j = 0; j < fsm_states_count(to); ++j)
         {
             fsm_state_t value = fsm_states_at(to, j);

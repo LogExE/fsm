@@ -30,7 +30,13 @@
 
 void print_kda_info(struct KDA *aut)
 {
-    printf("At state: %d\n", kda_get_state(aut));
+    printf("At state: ");
+    fsm_state_t state = kda_get_state(aut);
+    if (state == KDA_STATE_FAILED)
+        printf("KDA_STATE_FAILED");
+    else
+        printf("%d", state);
+    printf("\n");
 }
 
 void print_nda_info(struct NDA *aut)

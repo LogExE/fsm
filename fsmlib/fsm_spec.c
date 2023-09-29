@@ -241,9 +241,13 @@ bool fsm_spec_read_from(FILE *stream, struct FSM_Spec *spec)
 
     for (fsm_state_t state = 0; state < FSM_MAX_STATE_NUM; ++state)
         for (int i = 0; i < FSM_ALPHABET_SIZE; ++i)
-            spec->output[state][i] = NULL;
+            spec->output[state][i] = fsm_states_create();
     for (int i = 0; i < rules_cnt; ++i)
-        spec->output[rules_in[i]][rules_sym[i] - 'a'] = rules_out[i];
+    {
+        int idx = rules_sym[i] - 'a';
+        fsm_states_free(spec->output[rules_in[i]][idx]);
+        spec->output[rules_in[i]][idx] = rules_out[i];
+    }
     return true;
 other_fail:
     free(fsm_alphabet);

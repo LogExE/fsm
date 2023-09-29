@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include <ctype.h>
+#include <assert.h>
 
 #include "fsm_spec.h"
 
@@ -36,13 +37,20 @@ void kda_reset(struct KDA *aut)
     aut->cur_state = aut->spec->init_state;
 }
 
+fsm_state_t kda_state_step(fsm_state_t state, struct FSM_Spec spec, char input)
+{
+    struct FSM_States *s = spec.output[state][input - 'a'];
+    int cnt = fsm_states_count(s);
+    assert(cnt <= 1);
+    if (cnt == 1)
+        return fsm_states_at(s, 0);
+    else
+        return KDA_STATE_FAILED;
+}
+
 void kda_step(struct KDA *aut, char input)
 {
-    struct FSM_States *s = aut->spec->output[aut->cur_state][input - 'a'];
-    if (fsm_states_count(s) == 1)
-        aut->cur_state = fsm_states_at(s, 0);
-    else
-        aut->cur_state = KDA_STATE_FAILED;
+    aut->cur_state = kda_state_step(aut->cur_state, *aut->spec, input);
 }
 
 bool kda_recognized(const struct KDA *aut)
