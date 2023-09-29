@@ -14,13 +14,8 @@ struct KDA
 
 struct KDA *kda_create(struct FSM_Spec *spec)
 {
-    for (int i = 0; i < fsm_states_count(spec->states); ++i)
-        for (char *alpha = spec->alphabet; *alpha != '\0'; ++alpha)
-        {
-            struct FSM_States *next = spec->output[i][*alpha - 'a'];
-            if (next != NULL && fsm_states_count(next) > 1)
-                return NULL;
-        }
+    if (fsm_spec_nondeterministic(*spec) || fsm_spec_eps(*spec))
+        return NULL;
     struct KDA *ret = malloc(sizeof(struct KDA));
     ret->spec = spec;
     ret->cur_state = spec->init_state;

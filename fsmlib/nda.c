@@ -11,6 +11,8 @@ struct NDA
 
 struct NDA *nda_create(struct FSM_Spec *spec)
 {
+    if (fsm_spec_eps(*spec))
+        return NULL;
     struct NDA *ret = malloc(sizeof(struct NDA));
     ret->spec = spec;
     ret->cur_states = fsm_states_create();

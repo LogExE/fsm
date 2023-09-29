@@ -55,9 +55,9 @@ bool fsm_spec_read_from(FILE *stream, struct FSM_Spec *spec)
     if (buf[0] == '!')
     {
         alph_cnt = atoi(buf + 1);
-        if (alph_cnt > FSM_ALPHABET_SIZE)
+        if (alph_cnt > 26)
         {
-            fprintf(stderr, "Expected alphabet size <= %d, found %d symbols!\n", FSM_ALPHABET_SIZE, alph_cnt);
+            fprintf(stderr, "Expected alphabet size <= 26, found %d symbols!\n", alph_cnt);
             goto alpha_fail;
         }
         fsm_alphabet = malloc(alph_cnt + 1);
@@ -197,26 +197,54 @@ bool fsm_spec_read_from(FILE *stream, struct FSM_Spec *spec)
             continue;
         char *seek = buf;
         char *end = NULL;
+        while (*seek && isblank(*seek))
+            ++seek; // пропуск пробелов
         // состояние до
         rules_in[rules_cnt] = strtol(seek, &end, 10);
-        seek = end + 1; // пропуск пробела
+        if (seek == end)
+        {
+            fprintf(stderr, "Bad rule number %d! In-state was in wrong format!\n", rules_cnt + 1);
+            goto other_fail;
+        }
+        seek = end;
+        while (*seek && isblank(*seek))
+            ++seek; // пропуск пробелов
         // вход
-        rules_sym[rules_cnt] = *seek;
-        ++seek;
+        int input_str_size = 0;
+        while (isalpha(seek[input_str_size]))
+            ++input_str_size;
+        if (input_str_size == 0)
+        {
+            fprintf(stderr, "Bad rule number %d! Input was abscent!\n", rules_cnt + 1);
+            goto other_fail;
+        }
+        else if (input_str_size == 1)
+            rules_sym[rules_cnt] = *seek;
+        else if (input_str_size == 3 && seek[0] == 'e' && seek[1] == 'p' && seek[2] == 's')
+            rules_sym[rules_cnt] = FSM_SYMBOL_EPS;
+        else
+        {
+            fprintf(stderr, "Bad rule number %d! Input was in wrong format!\n", rules_cnt + 1);
+            goto other_fail;
+        }
+        seek += input_str_size;
+        while (*seek && isblank(*seek))
+            ++seek; // пропуск пробелов
         // следующие состояния
         rules_out[rules_cnt] = fsm_states_create();
-        seek = strtok(seek, ",");
+        const char *delim = " ,";
+        seek = strtok(seek, delim);
         while (seek != NULL)
         {
-            fsm_states_add(rules_out[rules_cnt], atoi(seek));
-            seek = strtok(NULL, ",");
+            int state = strtol(seek, &end, 10);
+            if (seek == end)
+            {
+                fprintf(stderr, "Bad rule number %d! Some out-state was in wrong format!\n", rules_cnt + 1);
+                goto other_fail;
+            }
+            fsm_states_add(rules_out[rules_cnt], state);
+            seek = strtok(NULL, delim);
         }
-        /* printf("found rule: (%d, %c) -> ",
-               rules_in[rules_cnt],
-               rules_sym[rules_cnt]);
-        for (int i = 0; i < fsm_states_count(rules_out[rules_cnt]); ++i)
-            printf("%d ", fsm_states_at(rules_out[rules_cnt], i));
-        printf("\n"); */
         ++rules_cnt;
     }
     printf("Read %d transition rules\n", rules_cnt);
@@ -297,9 +325,19 @@ static int get_max_len(struct FSM_Spec spec)
 void fsm_spec_output(struct FSM_Spec spec)
 {
     int spaces = get_max_len(spec) + 1;
+    bool eps = fsm_spec_eps(spec);
     printf(OUTPUT_DELIM);
     printf("     |");
-    char *seek = spec.alphabet;
+    char alpha_copy[FSM_ALPHABET_SIZE + 1];
+    int alpha_copy_size = strlen(spec.alphabet);
+    strcpy(alpha_copy, spec.alphabet);
+    if (eps)
+    {
+        alpha_copy[alpha_copy_size] = FSM_SYMBOL_EPS;
+        ++alpha_copy_size;
+    }
+    alpha_copy[alpha_copy_size] = '\0';
+    char *seek = alpha_copy;
     while (*seek)
         printf("%*c|", spaces, *seek++);
     printf("\n");
@@ -317,11 +355,11 @@ void fsm_spec_output(struct FSM_Spec spec)
         else
             printf("    ");
         printf("%d|", state);
-        seek = spec.alphabet;
+        seek = alpha_copy;
         while (*seek)
         {
             struct FSM_States *to_print = spec.output[state][*seek++ - 'a'];
-            if (to_print == NULL)
+            if (fsm_states_count(to_print) == 0)
                 printf("%*c", spaces, '-');
             else
             {
@@ -338,4 +376,25 @@ void fsm_spec_output(struct FSM_Spec spec)
         printf("\n");
     }
     printf(OUTPUT_DELIM);
+}
+
+bool fsm_spec_nondeterministic(struct FSM_Spec spec)
+{
+    for (int i = 0; i < fsm_states_count(spec.states); ++i)
+        for (char *alpha = spec.alphabet; *alpha; ++alpha)
+            if (fsm_states_count(spec.output[fsm_states_at(spec.states, i)][*alpha - 'a']) > 1)
+            {
+                return true;
+            }
+    return false;
+}
+
+bool fsm_spec_eps(struct FSM_Spec spec)
+{
+    for (int i = 0; i < fsm_states_count(spec.states); ++i)
+        if (fsm_states_count(spec.output[fsm_states_at(spec.states, i)][FSM_SYMBOL_EPS - 'a']) > 0)
+        {
+            return true;
+        }
+    return false;
 }
