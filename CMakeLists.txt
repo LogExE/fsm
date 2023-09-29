@@ -14,8 +14,10 @@ set(FSM "KDA" CACHE STRING "Type of automata to simulate")
 
 if (FSM STREQUAL "KDA")
     target_compile_definitions(fsm PRIVATE "TYPE_KDA")
-else()
+elseif(FSM STREQUAL "NDA")
     target_compile_definitions(fsm PRIVATE "TYPE_NDA")
+else()
+    target_compile_definitions(fsm PRIVATE "TYPE_NDA_EPS")
 endif()
 
 add_subdirectory(fsmlib)

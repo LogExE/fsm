@@ -2,8 +2,9 @@
 #include <stdlib.h>
 
 #include "bufreadline.h"
-#include "nda.h"
 #include "kda.h"
+#include "nda.h"
+#include "nda_eps.h"
 
 #define FSM_FILE "input.txt"
 
@@ -12,20 +13,27 @@
 #define ANSI_YELLOW "\033[0;33m"
 #define ANSI_RESET "\033[0m"
 
-#ifdef TYPE_KDA
+#if defined(TYPE_KDA)
 #define FSM KDA
 #define fsm_create kda_create
 #define fsm_step kda_step
 #define fsm_recognized kda_recognized
 #define fsm_reset kda_reset
 #define print_fsm_info print_kda_info
-#else
+#elif defined(TYPE_NDA)
 #define FSM NDA
 #define fsm_create nda_create
 #define fsm_step nda_step
 #define fsm_recognized nda_recognized
 #define fsm_reset nda_reset
 #define print_fsm_info print_nda_info
+#else
+#define FSM NDA_Eps
+#define fsm_create nda_eps_create
+#define fsm_step nda_eps_step
+#define fsm_recognized nda_eps_recognized
+#define fsm_reset nda_eps_reset
+#define print_fsm_info print_nda_eps_info
 #endif
 
 void print_kda_info(struct KDA *aut)
@@ -40,6 +48,20 @@ void print_kda_info(struct KDA *aut)
 }
 
 void print_nda_info(struct NDA *aut)
+{
+    struct FSM_States *states = nda_get_states(aut);
+    printf("At states: {");
+    int cnt = fsm_states_count(states);
+    for (int i = 0; i < cnt; ++i)
+    {
+        printf("%d", fsm_states_at(states, i));
+        if (i < cnt - 1)
+            printf(", ");
+    }
+    printf("}\n");
+}
+
+void print_nda_eps_info(struct NDA_Eps *aut)
 {
     struct FSM_States *states = nda_get_states(aut);
     printf("At states: {");

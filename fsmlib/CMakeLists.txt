@@ -7,6 +7,7 @@ add_library(fsmlib
     fsm_spec.c
     kda.c
     nda.c
+    nda_eps.c
 )
 
 include_directories(../bufreadline)
