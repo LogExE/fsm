@@ -25,8 +25,6 @@ bool fsm_spec_read_from(FILE *stream, struct FSM_Spec *spec)
     struct FSM_States *fsm_fin_states = fsm_states_create();
     int fsm_init_state;
 
-    printf("Reading automata spec from file...\n");
-
     // Буфер для считывания строк потока
     char buf[LINE_SIZE];
     int buf_len;
@@ -80,7 +78,6 @@ bool fsm_spec_read_from(FILE *stream, struct FSM_Spec *spec)
         memcpy(fsm_alphabet, buf, alph_cnt);
     }
     fsm_alphabet[alph_cnt] = '\0';
-    printf("Alphabet: \"%s\", size %d\n", fsm_alphabet, alph_cnt);
 
     // Читаем возможные состояния автомата
     do
@@ -121,7 +118,6 @@ bool fsm_spec_read_from(FILE *stream, struct FSM_Spec *spec)
             fsm_states_add(fsm_states, state);
         }
     }
-    printf("total states found: %d\n", fsm_states_count(fsm_states));
 
     // Читаем финальные состояния
     do
@@ -155,7 +151,6 @@ bool fsm_spec_read_from(FILE *stream, struct FSM_Spec *spec)
             fsm_states_add(fsm_fin_states, fin_state);
         }
     }
-    printf("total final states found:  %d\n", fsm_states_count(fsm_fin_states));
 
     // Читаем начальное состояние
     do
@@ -178,7 +173,6 @@ bool fsm_spec_read_from(FILE *stream, struct FSM_Spec *spec)
     }
 
     fsm_init_state = atoi(buf);
-    printf("initial state: %d\n", fsm_init_state);
 
     fsm_state_t rules_in[FILE_MAX_RULES_COUNT];
     char rules_sym[FILE_MAX_RULES_COUNT];
@@ -247,7 +241,6 @@ bool fsm_spec_read_from(FILE *stream, struct FSM_Spec *spec)
         }
         ++rules_cnt;
     }
-    printf("Read %d transition rules\n", rules_cnt);
 
     if (buf_len == BUF_RL_ERR)
     {
@@ -259,8 +252,6 @@ bool fsm_spec_read_from(FILE *stream, struct FSM_Spec *spec)
         fprintf(stderr, "Rule line was too long!\n");
         goto other_fail;
     }
-
-    printf("good.\n");
 
     spec->alphabet = fsm_alphabet;
     spec->states = fsm_states;

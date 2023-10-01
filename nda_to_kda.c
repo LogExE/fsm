@@ -69,6 +69,7 @@ int main(int argc, char **argv)
         fprintf(stderr, "usage: %s <file_in> <file_out>\n", argv[0]);
         return 1;
     }
+    printf("Reading %s...\n", argv[1]);
     FILE *file_in = fopen(argv[1], "r");
     if (file_in == NULL)
     {

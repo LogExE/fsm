@@ -6,7 +6,8 @@
 #include "nda.h"
 #include "nda_eps.h"
 
-#define FSM_FILE "input.txt"
+#define FSM_SPEC_FILE_VAR "FSM_SPEC_FILE"
+#define FSM_SPEC_FILE_DEFAULT "input.txt"
 
 #define ANSI_GREEN "\033[0;32m"
 #define ANSI_RED "\033[0;31m"
@@ -81,13 +82,22 @@ void print_nda_eps_info(struct NDA_Eps *aut)
 int main(void)
 {
     printf("Compiled for type %s\n", FSM_STRING);
-    FILE *file = fopen(FSM_FILE, "r");
+    printf("Reading environment variable \"%s\"...\n", FSM_SPEC_FILE_VAR);
+    const char *spec_file = getenv(FSM_SPEC_FILE_VAR);
+    if (!spec_file)
+    {
+        printf("Environment variable \"%s\" doesn't exist.\n", FSM_SPEC_FILE_VAR);
+        spec_file = FSM_SPEC_FILE_DEFAULT;
+    }
+    printf("Using path %s\n", spec_file);
+    FILE *file = fopen(spec_file, "r");
     if (file == NULL)
     {
-        fprintf(stderr, "File %s doesn't exist!\n", FSM_FILE);
+        fprintf(stderr, "File %s doesn't exist!\n", spec_file);
         return 1;
     }
     struct FSM_Spec spec;
+    printf("Reading automata specification...\n");
     bool read = fsm_spec_read_from(file, &spec);
     if (!read)
     {
@@ -96,7 +106,7 @@ int main(void)
     }
     fclose(file);
 
-    printf("Read spec:\n");
+    printf("Read specification:\n");
     fsm_spec_output(spec);
     struct FSM *aut = fsm_create(&spec);
     if (aut == NULL)
