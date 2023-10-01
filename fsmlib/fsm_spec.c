@@ -33,9 +33,8 @@ bool fsm_spec_read_from(FILE *stream, struct FSM_Spec *spec)
 
     // Читаем алфавит
     do
-    {
         buf_len = buf_readline(buf, stream);
-    } while (buf_len == 0);
+    while (buf_len == 0);
     if (buf_len == BUF_RL_ERR)
     {
         fprintf(stderr, "Error while reading alphabet!\n");
@@ -85,9 +84,8 @@ bool fsm_spec_read_from(FILE *stream, struct FSM_Spec *spec)
 
     // Читаем возможные состояния автомата
     do
-    {
         buf_len = buf_readline(buf, stream);
-    } while (buf_len == 0);
+    while (buf_len == 0);
     if (buf_len == BUF_RL_ERR)
     {
         fprintf(stderr, "Error while reading states!\n");
@@ -127,9 +125,8 @@ bool fsm_spec_read_from(FILE *stream, struct FSM_Spec *spec)
 
     // Читаем финальные состояния
     do
-    {
         buf_len = buf_readline(buf, stream);
-    } while (buf_len == 0);
+    while (buf_len == 0);
     if (buf_len == BUF_RL_ERR)
     {
         fprintf(stderr, "Error while reading final states!\n");
@@ -162,9 +159,8 @@ bool fsm_spec_read_from(FILE *stream, struct FSM_Spec *spec)
 
     // Читаем начальное состояние
     do
-    {
         buf_len = buf_readline(buf, stream);
-    } while (buf_len == 0);
+    while (buf_len == 0);
     if (buf_len == BUF_RL_ERR)
     {
         fprintf(stderr, "Error while reading initial state!\n");
@@ -219,9 +215,13 @@ bool fsm_spec_read_from(FILE *stream, struct FSM_Spec *spec)
             goto other_fail;
         }
         else if (input_str_size == 1)
+        {
             rules_sym[rules_cnt] = *seek;
+        }
         else if (input_str_size == 3 && seek[0] == 'e' && seek[1] == 'p' && seek[2] == 's')
+        {
             rules_sym[rules_cnt] = FSM_SYMBOL_EPS;
+        }
         else
         {
             fprintf(stderr, "Bad rule number %d! Input was in wrong format!\n", rules_cnt + 1);
@@ -309,7 +309,9 @@ static int get_max_len(struct FSM_Spec spec)
         {
             struct FSM_States *to_print = spec.output[state][*seek++ - 'a'];
             if (to_print == NULL)
+            {
                 res = MAX(res, 1);
+            }
             else
             {
                 int sum = int_digits(fsm_states_at(to_print, 0));
@@ -360,7 +362,9 @@ void fsm_spec_output(struct FSM_Spec spec)
         {
             struct FSM_States *to_print = spec.output[state][*seek++ - 'a'];
             if (fsm_states_count(to_print) == 0)
+            {
                 printf("%*c", spaces, '-');
+            }
             else
             {
                 char target_buf[LINE_SIZE];
@@ -383,9 +387,7 @@ bool fsm_spec_nondeterministic(struct FSM_Spec spec)
     for (int i = 0; i < fsm_states_count(spec.states); ++i)
         for (char *alpha = spec.alphabet; *alpha; ++alpha)
             if (fsm_states_count(spec.output[fsm_states_at(spec.states, i)][*alpha - 'a']) > 1)
-            {
                 return true;
-            }
     return false;
 }
 
@@ -393,8 +395,6 @@ bool fsm_spec_eps(struct FSM_Spec spec)
 {
     for (int i = 0; i < fsm_states_count(spec.states); ++i)
         if (fsm_states_count(spec.output[fsm_states_at(spec.states, i)][FSM_SYMBOL_EPS - 'a']) > 0)
-        {
             return true;
-        }
     return false;
 }
