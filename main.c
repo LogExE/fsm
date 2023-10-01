@@ -63,7 +63,7 @@ void print_nda_info(struct NDA *aut)
 
 void print_nda_eps_info(struct NDA_Eps *aut)
 {
-    struct FSM_States *states = nda_get_states(aut);
+    struct FSM_States *states = nda_eps_get_states(aut);
     printf("At states: {");
     int cnt = fsm_states_count(states);
     for (int i = 0; i < cnt; ++i)
