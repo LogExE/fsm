@@ -104,6 +104,7 @@ int main(void)
     char inp[LINE_SIZE];
     while (1)
     {
+        print_fsm_info(aut);
         printf("NEXT WORD\n> ");
         int read = buf_readline(inp, stdin);
         if (read == BUF_RL_EOF)

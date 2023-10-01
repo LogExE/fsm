@@ -25,8 +25,8 @@ void nda_eps_free(struct NDA_Eps *aut)
 
 void nda_eps_reset(struct NDA_Eps *aut)
 {
-    fsm_states_reset(aut->cur_states);
-    fsm_states_add(aut->cur_states, aut->spec->init_state);
+    fsm_states_free(aut->cur_states);
+    aut->cur_states = nda_eps_closure(aut->spec->init_state, *aut->spec);
 }
 
 void nda_eps_step(struct NDA_Eps *aut, char input)
