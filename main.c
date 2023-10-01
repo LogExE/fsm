@@ -14,6 +14,7 @@
 #define ANSI_RESET "\033[0m"
 
 #if defined(TYPE_KDA)
+#define FSM_STRING "KDA"
 #define FSM KDA
 #define fsm_create kda_create
 #define fsm_step kda_step
@@ -21,6 +22,7 @@
 #define fsm_reset kda_reset
 #define print_fsm_info print_kda_info
 #elif defined(TYPE_NDA)
+#define FSM_STRING "NDA"
 #define FSM NDA
 #define fsm_create nda_create
 #define fsm_step nda_step
@@ -28,6 +30,7 @@
 #define fsm_reset nda_reset
 #define print_fsm_info print_nda_info
 #else
+#define FSM_STRING "NDA_EPS"
 #define FSM NDA_Eps
 #define fsm_create nda_eps_create
 #define fsm_step nda_eps_step
@@ -77,6 +80,7 @@ void print_nda_eps_info(struct NDA_Eps *aut)
 
 int main(void)
 {
+    printf("Compiled for type %s\n", FSM_STRING);
     FILE *file = fopen(FSM_FILE, "r");
     if (file == NULL)
     {
