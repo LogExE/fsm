@@ -287,8 +287,9 @@ void fsm_spec_write_to(FILE *stream, struct FSM_Spec spec)
     // Финальные состояния
     for (int i = 0; i < fsm_states_count(spec.fin_states); ++i)
         fprintf(stream, "%d ", fsm_states_at(spec.fin_states, i));
+    fprintf(stream, "\n");
     // Начальное состояние
-    fprintf("%d\n", spec.init_state);
+    fprintf(stream, "%d\n", spec.init_state);
     // Переходы
     for (int i = 0; i < fsm_states_count(spec.states); ++i)
         for (char *alpha = spec.alphabet; *alpha != '\0'; ++alpha)
