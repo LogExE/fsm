@@ -14,3 +14,5 @@ struct FSM_States *nda_states_step(const struct FSM_States *states, struct FSM_S
 
 struct FSM_States *nda_get_states(const struct NDA *aut);
 bool nda_recognized(const struct NDA *aut);
+
+struct FSM_Spec nda_convert_spec_to_kda(struct FSM_Spec spec);
