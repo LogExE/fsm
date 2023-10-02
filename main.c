@@ -158,10 +158,5 @@ int main(void)
         fsm_reset(aut);
         printf("Automaton has been reset.\n");
     }
-    for (fsm_state_t state = 0; state < FSM_MAX_STATE_NUM; ++state)
-        for (int i = 0; i < FSM_ALPHABET_SIZE; ++i)
-            fsm_states_free(spec.output[state][i]);
-    fsm_states_free(spec.fin_states);
-    fsm_states_free(spec.states);
-    free(spec.alphabet);
+    fsm_spec_free(spec);
 }

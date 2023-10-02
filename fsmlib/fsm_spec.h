@@ -25,6 +25,7 @@ struct FSM_Spec
 bool fsm_spec_check_is_final(struct FSM_Spec spec, fsm_state_t state);
 
 bool fsm_spec_read_from(FILE *stream, struct FSM_Spec *spec);
+void fsm_spec_free(struct FSM_Spec spec);
 void fsm_spec_output(struct FSM_Spec spec);
 bool fsm_spec_nondeterministic(struct FSM_Spec spec);
 bool fsm_spec_eps(struct FSM_Spec spec);

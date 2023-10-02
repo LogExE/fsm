@@ -82,8 +82,6 @@ int main(int argc, char **argv)
     FILE *file_out = fopen(argv[2], "w");
     convert_write(spec, file_out);
     fclose(file_out);
-    free(spec.alphabet);
-    fsm_states_free(spec.states);
-    fsm_states_free(spec.fin_states);
+    fsm_spec_free(spec);
     return 0;
 }
