@@ -1,34 +1,44 @@
 #include "stdio.h"
 #include "stdlib.h"
+#include "string.h"
 
 #include "fsm_spec.h"
 #include "nda.h"
 
-void convert_write(struct FSM_Spec spec, FILE *file)
+struct FSM_Spec convert_nda_to_kda(struct FSM_Spec spec)
 {
-    fprintf(file, "%s\n", spec.alphabet);
+    struct FSM_Spec ret;
+
+    ret.alphabet = malloc(strlen(spec.alphabet));
+    strcpy(ret.alphabet, spec.alphabet);
+
     struct FSM_States *new_states_col[FSM_MAX_STATE_NUM];
-    new_states_col[0] = fsm_states_create();
-    fsm_states_add(new_states_col[0], spec.init_state);
-    struct FSM_States *new_rules[FSM_MAX_STATE_NUM][FSM_ALPHABET_SIZE];
-    struct FSM_States *fin_states = fsm_states_create();
+    new_states_col[1] = fsm_states_create();
+    fsm_states_add(new_states_col[1], spec.init_state);
+    struct FSM_States *rules[FSM_MAX_STATE_NUM][FSM_ALPHABET_SIZE];
+    for (fsm_state_t state = 0; state < FSM_MAX_STATE_NUM; ++state)
+        for (int i = 0; i < FSM_ALPHABET_SIZE; ++i)
+            rules[state][i] = NULL;
     int table_size = 1;
-    for (int i = 0; i < table_size; ++i)
+    for (int i = 1; i <= table_size; ++i)
         for (char *alpha = spec.alphabet; *alpha != '\0'; ++alpha)
         {
             int idx = *alpha - 'a';
-            new_rules[i][idx] = nda_states_step(new_states_col[i], spec, *alpha);
-            for (int j = 0; j < table_size; ++j)
-                if (fsm_states_alike(new_rules[i][idx], new_states_col[j]))
+            rules[i][idx] = nda_states_step(new_states_col[i], spec, *alpha);
+            for (int j = 1; j <= table_size; ++j)
+                if (fsm_states_alike(rules[i][idx], new_states_col[j]))
                     goto found;
-            new_states_col[table_size] = new_rules[i][idx];
+            new_states_col[table_size + 1] = rules[i][idx];
             ++table_size;
         found:
         }
+
+    ret.states = fsm_states_create();
+    ret.fin_states = fsm_states_create();
     printf("New states:\n");
-    for (int i = 0; i < table_size; ++i)
+    for (int i = 1; i <= table_size; ++i)
     {
-        printf("%d: {", i + 1);
+        printf("%d: {", i);
         int cnt = fsm_states_count(new_states_col[i]);
         for (int j = 0; j < cnt; ++j)
         {
@@ -40,25 +50,26 @@ void convert_write(struct FSM_Spec spec, FILE *file)
     }
     // Нумеруем новые состояния
     for (int i = 1; i <= table_size; ++i)
-        fprintf(file, "%d ", i);
-    fprintf(file, "\n");
+        fsm_states_add(ret.states, i);
     // Новые конечные состояния
-    for (int i = 0; i < table_size; ++i)
+    for (int i = 1; i <= table_size; ++i)
         for (int j = 0; j < fsm_states_count(spec.fin_states); ++j)
             if (fsm_states_contains(new_states_col[i], fsm_states_at(spec.fin_states, j)))
-                fprintf(file, "%d ", i + 1);
-    fprintf(file, "\n");
-    fprintf(file, "1\n"); // начальное состояние
+                fsm_states_add(ret.fin_states, i + 1);
+    ret.init_state = 1;
     // Новые правила перехода
-    for (int i = 0; i < table_size; ++i)
-        for (char *alpha = spec.alphabet; *alpha != '\0'; ++alpha)
+    for (fsm_state_t state = 0; state < FSM_MAX_STATE_NUM; ++state)
+        for (int i = 0; i < FSM_ALPHABET_SIZE; ++i)
         {
-            int idx = *alpha - 'a';
-            int j = 0;
-            while (!fsm_states_alike(new_states_col[j], new_rules[i][idx]))
+            ret.output[state][i] = fsm_states_create();
+            if (rules[state][i] == NULL)
+                continue;
+            int j = 1;
+            while (!fsm_states_alike(rules[state][i], new_states_col[j]))
                 ++j;
-            fprintf(file, "%d %c %d\n", i + 1, *alpha, j + 1);
+            fsm_states_add(ret.output[state][i], j);
         }
+    return ret;
 }
 
 int main(int argc, char **argv)
@@ -78,9 +89,11 @@ int main(int argc, char **argv)
     struct FSM_Spec spec;
     fsm_spec_read_from(file_in, &spec);
     fclose(file_in);
+    struct FSM_Spec new_spec = convert_nda_to_kda(spec);
     FILE *file_out = fopen(argv[2], "w");
-    convert_write(spec, file_out);
+    fsm_spec_write_to(file_out, new_spec);
     fclose(file_out);
     fsm_spec_free(spec);
+    fsm_spec_free(new_spec);
     return 0;
 }

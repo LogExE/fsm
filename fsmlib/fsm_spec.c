@@ -276,6 +276,45 @@ alpha_fail:
     return false;
 }
 
+void fsm_spec_write_to(FILE *stream, struct FSM_Spec spec)
+{
+    // Алфавит
+    fprintf(stream, "%s\n", spec.alphabet);
+    // Множество состояний
+    for (int i = 0; i < fsm_states_count(spec.states); ++i)
+        fprintf(stream, "%d ", fsm_states_at(spec.states, i));
+    fprintf(stream, "\n");
+    // Финальные состояния
+    for (int i = 0; i < fsm_states_count(spec.fin_states); ++i)
+        fprintf(stream, "%d ", fsm_states_at(spec.fin_states, i));
+    // Начальное состояние
+    fprintf("%d\n", spec.init_state);
+    // Переходы
+    for (int i = 0; i < fsm_states_count(spec.states); ++i)
+        for (char *alpha = spec.alphabet; *alpha != '\0'; ++alpha)
+        {
+            fsm_state_t state = fsm_states_at(spec.states, i);
+            int idx = *alpha - 'a';
+            struct FSM_States *to = spec.output[state][idx];
+            if (fsm_states_count(to) > 0)
+            {
+                fprintf(stream, "%d ", state);
+                if (*alpha == FSM_SYMBOL_EPS)
+                    fprintf(stream, "eps ");
+                else
+                    fprintf(stream, "%c ", *alpha);
+                int cnt = fsm_states_count(to);
+                for (int j = 0; j < cnt; ++j)
+                {
+                    fprintf(stream, "%d", fsm_states_at(to, j));
+                    if (j < cnt - 1)
+                        fprintf(stream, ", ");
+                }
+                fprintf(stream, "\n");
+            }
+        }
+}
+
 void fsm_spec_free(struct FSM_Spec spec)
 {
     for (fsm_state_t state = 0; state < FSM_MAX_STATE_NUM; ++state)

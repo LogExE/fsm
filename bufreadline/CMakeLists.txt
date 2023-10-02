@@ -5,3 +5,5 @@ project("bufreadline")
 add_library(bufreadline
     bufreadline.c
 )
+
+target_compile_options(bufreadline PRIVATE -Wall -Wextra -Wpedantic)

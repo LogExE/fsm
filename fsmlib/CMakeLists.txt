@@ -12,3 +12,4 @@ add_library(fsmlib
 
 include_directories(../bufreadline)
 target_link_libraries(fsmlib PUBLIC bufreadline)
+target_compile_options(fsmlib PRIVATE -Wall -Wextra -Wpedantic)
