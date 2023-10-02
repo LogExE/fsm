@@ -95,7 +95,7 @@ struct FSM_Spec nda_convert_spec_to_kda(struct FSM_Spec spec)
                     goto found;
             new_states_col[table_size + 1] = rules[i][idx];
             ++table_size;
-        found:
+        found:;
         }
 
     ret.states = fsm_states_create();
