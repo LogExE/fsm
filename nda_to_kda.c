@@ -48,7 +48,7 @@ void convert_write(struct FSM_Spec spec, FILE *file)
             if (fsm_states_contains(new_states_col[i], fsm_states_at(spec.fin_states, j)))
                 fprintf(file, "%d ", i + 1);
     fprintf(file, "\n");
-    fprintf(file, "%d\n", new_states_col[0]); // 1
+    fprintf(file, "1\n"); // начальное состояние
     // Новые правила перехода
     for (int i = 0; i < table_size; ++i)
         for (char *alpha = spec.alphabet; *alpha != '\0'; ++alpha)
