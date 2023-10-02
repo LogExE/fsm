@@ -22,10 +22,10 @@ int main(int argc, char **argv)
     fsm_spec_read_from(file_in, &spec);
     fclose(file_in);
     struct FSM_Spec new_spec = nda_convert_spec_to_kda(spec);
+    fsm_spec_free(spec);
     FILE *file_out = fopen(argv[2], "w");
     fsm_spec_write_to(file_out, new_spec);
     fclose(file_out);
-    fsm_spec_free(spec);
     fsm_spec_free(new_spec);
     return 0;
 }

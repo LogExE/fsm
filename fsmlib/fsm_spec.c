@@ -424,6 +424,7 @@ void fsm_spec_output(struct FSM_Spec spec)
         }
         printf("\n");
     }
+    free(alpha_copy);
     printf(OUTPUT_DELIM);
 }
 
