@@ -6,8 +6,8 @@ add_executable(fsm
     main.c
 )
 
-add_executable(nda_to_kda
-    nda_to_kda.c
+add_executable(fsm_conv
+    fsm_conv.c
 )
 
 set(FSM "KDA" CACHE STRING "Type of automata to simulate")
@@ -24,7 +24,7 @@ add_subdirectory(fsmlib)
 add_subdirectory(bufreadline)
 
 target_link_libraries(fsm PUBLIC fsmlib)
-target_link_libraries(nda_to_kda PUBLIC fsmlib)
+target_link_libraries(fsm_conv PUBLIC fsmlib)
 
 include_directories(fsmlib bufreadline)
 target_compile_options(fsm PRIVATE -Wall -Wextra -Wpedantic)

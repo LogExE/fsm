@@ -52,9 +52,9 @@ bool fsm_spec_read_from(FILE *stream, struct FSM_Spec *spec)
     if (buf[0] == '!')
     {
         alph_cnt = atoi(buf + 1);
-        if (alph_cnt > 26)
+        if (alph_cnt > FSM_ALPHABET_SIZE)
         {
-            fprintf(stderr, "Expected alphabet size <= 26, found %d symbols!\n", alph_cnt);
+            fprintf(stderr, "Expected alphabet size <= %d, found %d symbols!\n", FSM_ALPHABET_SIZE, alph_cnt);
             goto alpha_fail;
         }
         fsm_alphabet = malloc(alph_cnt + 1);
@@ -259,7 +259,7 @@ bool fsm_spec_read_from(FILE *stream, struct FSM_Spec *spec)
     spec->init_state = fsm_init_state;
 
     for (fsm_state_t state = 0; state < FSM_MAX_STATE_NUM; ++state)
-        for (int i = 0; i < FSM_ALPHABET_SIZE; ++i)
+        for (int i = 0; i < FSM_ALPHABET_SIZE + 1; ++i)
             spec->output[state][i] = fsm_states_create();
     for (int i = 0; i < rules_cnt; ++i)
     {
@@ -326,9 +326,7 @@ void fsm_spec_free(struct FSM_Spec spec)
     free(spec.alphabet);
 }
 
-#define OUTPUT_DELIM "##########\n"
-
-static int int_digits(int x)
+static int int_digits_count(int x)
 {
     int res = 1;
     while (x >= 10)
@@ -339,7 +337,7 @@ static int int_digits(int x)
     return res;
 }
 
-static char *extend_alpha(char *alphabet, bool eps)
+static char *extend_alphabet(char *alphabet, bool eps)
 {
     char *alpha_copy = malloc(FSM_ALPHABET_SIZE + 1);
     int alpha_copy_size = strlen(alphabet);
@@ -353,10 +351,10 @@ static char *extend_alpha(char *alphabet, bool eps)
     return alpha_copy;
 }
 
-static int get_max_len(struct FSM_Spec spec)
+static int get_column_wideness(struct FSM_Spec spec)
 {
     int res = 1;
-    char *alpha_copy = extend_alpha(spec.alphabet, fsm_spec_eps(spec));
+    char *alpha_copy = extend_alphabet(spec.alphabet, fsm_spec_eps(spec));
     for (int i = 0; i < fsm_states_count(spec.states); ++i)
     {
         fsm_state_t state = fsm_states_at(spec.states, i);
@@ -366,9 +364,9 @@ static int get_max_len(struct FSM_Spec spec)
             struct FSM_States *to_print = spec.output[state][*seek++ - 'a'];
             if (to_print != NULL)
             {
-                int sum = int_digits(fsm_states_at(to_print, 0));
+                int sum = int_digits_count(fsm_states_at(to_print, 0));
                 for (int j = 1; j < fsm_states_count(to_print); ++j)
-                    sum += int_digits(fsm_states_at(to_print, j)) + 1;
+                    sum += int_digits_count(fsm_states_at(to_print, j)) + 1;
                 res = MAX(res, sum);
             }
         }
@@ -379,11 +377,10 @@ static int get_max_len(struct FSM_Spec spec)
 
 void fsm_spec_output(struct FSM_Spec spec)
 {
-    int spaces = get_max_len(spec) + 1;
+    int spaces = get_column_wideness(spec) + 1;
     bool eps = fsm_spec_eps(spec);
-    printf(OUTPUT_DELIM);
     printf("     |");
-    char *alpha_copy = extend_alpha(spec.alphabet, eps);
+    char *alpha_copy = extend_alphabet(spec.alphabet, eps);
     char *seek = alpha_copy;
     while (*seek)
         printf("%*c|", spaces, *seek++);
@@ -425,7 +422,6 @@ void fsm_spec_output(struct FSM_Spec spec)
         printf("\n");
     }
     free(alpha_copy);
-    printf(OUTPUT_DELIM);
 }
 
 bool fsm_spec_nondeterministic(struct FSM_Spec spec)

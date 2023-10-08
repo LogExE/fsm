@@ -46,8 +46,7 @@ struct FSM_States *nda_eps_states_step(const struct FSM_States *states, struct F
         for (int j = 0; j < fsm_states_count(to); ++j)
         {
             fsm_state_t value = fsm_states_at(to, j);
-            if (!fsm_states_contains(stepped, value))
-                fsm_states_add(stepped, value);
+            fsm_states_add_uniq(stepped, value);
         }
         fsm_states_free(to);
     }
@@ -63,8 +62,7 @@ struct FSM_States *nda_eps_closure(fsm_state_t state, struct FSM_Spec spec)
     {
         fsm_state_t head = fsm_states_at(queue, 0);
         fsm_states_remove(queue, 0);
-        if (!fsm_states_contains(res, head))
-            fsm_states_add(res, head);
+        fsm_states_add_uniq(res, head);
         struct FSM_States *to = spec.output[head][FSM_SYMBOL_EPS - 'a'];
         for (int i = 0; i < fsm_states_count(to); ++i)
             fsm_states_add(queue, fsm_states_at(to, i));
@@ -82,8 +80,7 @@ struct FSM_States *nda_eps_states_closure(const struct FSM_States *states, struc
         for (int j = 0; j < fsm_states_count(clos); ++j)
         {
             fsm_state_t clos_state = fsm_states_at(clos, j);
-            if (!fsm_states_contains(res, clos_state))
-                fsm_states_add(res, clos_state);
+            fsm_states_add_uniq(res, clos_state);
         }
         fsm_states_free(clos);
     }
@@ -101,4 +98,37 @@ bool nda_eps_recognized(const struct NDA_Eps *aut)
         if (fsm_states_contains(aut->spec->fin_states, fsm_states_at(aut->cur_states, i)))
             return true;
     return false;
+}
+
+struct FSM_Spec nda_eps_convert_spec_to_nda(struct FSM_Spec spec)
+{
+    struct FSM_Spec ret;
+
+    ret.alphabet = malloc(strlen(spec.alphabet));
+    strcpy(ret.alphabet, spec.alphabet);
+    ret.states = fsm_states_copy(spec.states);
+    ret.init_state = spec.init_state;
+
+    ret.fin_states = fsm_states_create();
+    for (fsm_state_t state = 0; state < FSM_MAX_STATE_NUM; ++state)
+        for (int i = 0; i < FSM_ALPHABET_SIZE; ++i)
+        {
+            ret.output[state][i] = fsm_states_create();
+            struct FSM_States *clos = nda_eps_closure(state, spec);
+            for (int j = 0; j < fsm_states_count(clos); ++j)
+            {
+                fsm_state_t clos_state = fsm_states_at(clos, j);
+                struct FSM_States *to = spec.output[clos_state][i];
+                for (int k = 0; k < fsm_states_count(to); ++k)
+                {
+                    fsm_state_t to_state = fsm_states_at(to, k);
+                    fsm_states_add_uniq(ret.output[state][i], to_state);
+                    if (fsm_spec_check_is_final(spec, to_state))
+                        fsm_states_add_uniq(ret.fin_states, to_state);
+                }
+            }
+            fsm_states_free(clos);
+        }
+
+    return ret;
 }

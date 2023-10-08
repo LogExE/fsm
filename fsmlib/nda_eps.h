@@ -16,3 +16,5 @@ struct FSM_States *nda_eps_states_closure(const struct FSM_States *states, struc
 
 struct FSM_States *nda_eps_get_states(const struct NDA_Eps *aut);
 bool nda_eps_recognized(const struct NDA_Eps *aut);
+
+struct FSM_Spec nda_eps_convert_spec_to_nda(struct FSM_Spec spec);

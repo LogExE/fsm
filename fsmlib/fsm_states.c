@@ -47,6 +47,12 @@ void fsm_states_add(struct FSM_States *arr, fsm_state_t state)
     ++arr->count;
 }
 
+void fsm_states_add_uniq(struct FSM_States *arr, fsm_state_t state)
+{
+    if (!fsm_states_contains(arr, state))
+        fsm_states_add(arr, state);
+}
+
 void fsm_states_remove(struct FSM_States *arr, int idx)
 {
     if (arr->count <= idx)

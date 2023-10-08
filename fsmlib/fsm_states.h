@@ -14,6 +14,7 @@ void fsm_states_free(struct FSM_States *states);
 struct FSM_States *fsm_states_copy(const struct FSM_States *states);
 
 void fsm_states_add(struct FSM_States *arr, fsm_state_t state);
+void fsm_states_add_uniq(struct FSM_States *arr, fsm_state_t state);
 void fsm_states_remove(struct FSM_States *arr, int idx);
 void fsm_states_purge(struct FSM_States *arr, fsm_state_t state);
 void fsm_states_reset(struct FSM_States *arr);
