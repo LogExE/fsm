@@ -74,15 +74,15 @@ struct FSM_Spec nda_convert_spec_to_kda(struct FSM_Spec spec)
 {
     struct FSM_Spec ret;
 
-    ret.alphabet = malloc(strlen(spec.alphabet));
+    ret.alphabet = malloc(strlen(spec.alphabet) + 1);
     strcpy(ret.alphabet, spec.alphabet);
 
     struct FSM_States *new_states_col[FSM_MAX_STATE_NUM];
     new_states_col[1] = fsm_states_create();
     fsm_states_add(new_states_col[1], spec.init_state);
-    struct FSM_States *rules[FSM_MAX_STATE_NUM][FSM_ALPHABET_SIZE];
+    struct FSM_States *rules[FSM_MAX_STATE_NUM][FSM_ALPHABET_SIZE + 1];
     for (fsm_state_t state = 0; state < FSM_MAX_STATE_NUM; ++state)
-        for (int i = 0; i < FSM_ALPHABET_SIZE; ++i)
+        for (int i = 0; i < FSM_ALPHABET_SIZE + 1; ++i)
             rules[state][i] = NULL;
     int table_size = 1;
     for (int i = 1; i <= table_size; ++i)
@@ -124,7 +124,7 @@ struct FSM_Spec nda_convert_spec_to_kda(struct FSM_Spec spec)
     ret.init_state = 1;
     // Новые правила перехода
     for (fsm_state_t state = 0; state < FSM_MAX_STATE_NUM; ++state)
-        for (int i = 0; i < FSM_ALPHABET_SIZE; ++i)
+        for (int i = 0; i < FSM_ALPHABET_SIZE + 1; ++i)
         {
             ret.output[state][i] = fsm_states_create();
             if (rules[state][i] == NULL)

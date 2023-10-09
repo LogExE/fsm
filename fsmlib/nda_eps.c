@@ -105,30 +105,40 @@ struct FSM_Spec nda_eps_convert_spec_to_nda(struct FSM_Spec spec)
 {
     struct FSM_Spec ret;
 
-    ret.alphabet = malloc(strlen(spec.alphabet));
+    ret.alphabet = malloc(strlen(spec.alphabet) + 1);
     strcpy(ret.alphabet, spec.alphabet);
     ret.states = fsm_states_copy(spec.states);
     ret.init_state = spec.init_state;
 
+    int states_cnt = fsm_states_count(spec.states);
+    struct FSM_States **clos = malloc(states_cnt * sizeof(struct FSM_States *));
+    for (int i = 0; i < states_cnt; ++i)
+        clos[i] = nda_eps_closure(fsm_states_at(spec.states, i), spec);
+
     ret.fin_states = fsm_states_create();
-    for (fsm_state_t state = 0; state < FSM_MAX_STATE_NUM; ++state)
-    {
-        struct FSM_States *clos = nda_eps_closure(state, spec);
-        for (int i = 0; i < FSM_ALPHABET_SIZE; ++i)
-        {
-            ret.output[state][i] = fsm_states_create();
-            for (int j = 0; j < fsm_states_count(clos); ++j)
+    for (int i = 0; i < states_cnt; ++i)
+        for (int j = 0; j < fsm_states_count(clos[i]); ++j)
+            if (fsm_spec_check_is_final(spec, fsm_states_at(clos[i], j)))
             {
-                fsm_state_t clos_state = fsm_states_at(clos, j);
-                if (fsm_spec_check_is_final(spec, clos_state))
-                    fsm_states_add_uniq(ret.fin_states, state);
-                struct FSM_States *to = spec.output[clos_state][i];
-                for (int k = 0; k < fsm_states_count(to); ++k)
-                    fsm_states_add_uniq(ret.output[state][i], fsm_states_at(to, k));
+                fsm_states_add_uniq(ret.fin_states, fsm_states_at(spec.states, i));
+                break;
             }
-        }
-        fsm_states_free(clos);
-    }
+
+    for (fsm_state_t state = 0; state < FSM_MAX_STATE_NUM; ++state)
+        for (int i = 0; i < FSM_ALPHABET_SIZE + 1; ++i)
+            ret.output[state][i] = fsm_states_create();
+    for (int i = 0; i < fsm_states_count(spec.states); ++i)
+        for (int j = 0; j < FSM_ALPHABET_SIZE + 1; ++j)
+            for (int k = 0; k < fsm_states_count(clos[i]); ++k)
+            {
+                struct FSM_States *to = spec.output[fsm_states_at(clos[i], k)][j];
+                for (int w = 0; w < fsm_states_count(to); ++w)
+                    fsm_states_add_uniq(ret.output[fsm_states_at(spec.states, i)][j], fsm_states_at(to, w));
+            }
+
+    for (int i = 0; i < states_cnt; ++i)
+        fsm_states_free(clos[i]);
+    free(clos);
 
     return ret;
 }
