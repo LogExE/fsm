@@ -112,10 +112,11 @@ struct FSM_Spec nda_eps_convert_spec_to_nda(struct FSM_Spec spec)
 
     ret.fin_states = fsm_states_create();
     for (fsm_state_t state = 0; state < FSM_MAX_STATE_NUM; ++state)
+    {
+        struct FSM_States *clos = nda_eps_closure(state, spec);
         for (int i = 0; i < FSM_ALPHABET_SIZE; ++i)
         {
             ret.output[state][i] = fsm_states_create();
-            struct FSM_States *clos = nda_eps_closure(state, spec);
             for (int j = 0; j < fsm_states_count(clos); ++j)
             {
                 fsm_state_t clos_state = fsm_states_at(clos, j);
@@ -125,8 +126,9 @@ struct FSM_Spec nda_eps_convert_spec_to_nda(struct FSM_Spec spec)
                 for (int k = 0; k < fsm_states_count(to); ++k)
                     fsm_states_add_uniq(ret.output[state][i], fsm_states_at(to, k));
             }
-            fsm_states_free(clos);
         }
+        fsm_states_free(clos);
+    }
 
     return ret;
 }
